@@ -12,8 +12,96 @@
  <header>
 <h1>Дошка оголошень групи (варіант N4)</h1>
 </header>
- <main> 
-    <p></p>
+ <main class ="page"> 
+    <section id ="create-post-section" class="panel">
+<h2>Додати оголошення</h2>
+<form id="create-form">
+   <div class="field">
+      <label for="titleInput">Заголовок</label>
+      <input 
+      id="titleInput"
+      type="text"
+      placeholder="Наприклад: Тепер без пива не пускають до гуртожитку"
+      maxlength="50"
+      required
+      >
+      <p class="error-text" id="fieldError"></p>
+   </div>
+   <div class="field">
+      <label for="categorySelect">Категорія</label>
+      <select id="categorySelect" required>
+<option value="">Оберіть категорію...</option>
+<option value="news">Новини</option>
+<option value="events">Події</option>
+<option value="lost-found">Потєряшкі</option>
+<option value="study">Навчання</option>
+<option value="sport">Спорт</option>
+<option value="memes">Меми</option>
+      </select>
+      <p class="error-text" id="fieldError"></p>
+   </div>
+<div class="field">
+   <label for="massageInput">Текст оголошення</label>
+   <textarea
+   id="massageInput"
+   rows="4"
+   placeholder="Опишіть деталі..."
+   minlength="15"
+   maxlength="400"
+   required
+   ></textarea>
+   <p class="error-text" id="fieldError"></p>
+</div>
+<div class="field">
+<label for="authorInput">Автор</label>
+<input
+id="authorInput"
+type="text"
+placeholder="Ваше ім'я"
+minlength="2"
+maxlength="25"
+required
+>
+<p class="error-text" id="fieldError"></p>
+</div>
+<button type="submit">Опублікувати</button>
+</form>
+    </section>
+    <section id="search-filter-section" class="panel">
+<h3>Пошук/фільтри</h3>
+<div class="search-filter-wrapper">
+   <div class="search-filter-field">
+      <input id="searchInput" type="text" placeholder="Пошук за заголовком...">
+   </div>
+   <div class="search-filter-field">
+      <select id="filterSelector">
+         <option value="all">Всі категорії</option>
+        <option value="news">Новини</option>
+        <option value="events">Події</option>
+        <option value="lost-found">Потєряшкі</option>
+        <option value="study">Навчання</option>
+        <option value="sport">Спорт</option>
+        <option value="memes">Меми</option>
+      </select>
+   </div>
+   <button id="clear-filters-btn" class="secondary-btn">Скинути фільтри</button>
+</div>
+    </section>
+    <section id="post-list-section">
+<h2>Список оголошень</h2>
+<table>
+   <thead>
+      <tr>
+         <th>Заголовок</th>
+         <th>Категорія</th>
+         <th>Текст</th>
+         <th>Автор</th>
+         <th>Дата</th>  <th>Дії</th>
+      </tr>
+   </thead>
+   <tbody id="posts-body"></tbody>
+</table>
+    </section>
  </main>
 </body>
 </html>
