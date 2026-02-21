@@ -15,40 +15,40 @@
  <main class ="page"> 
     <section id ="create-post-section" class="panel">
 <h2>Додати оголошення</h2>
-<form id="create-form">
+<form id="create-form" novalidate>
    <div class="field">
       <label for="titleInput">Заголовок</label>
       <input 
       id="titleInput"
       type="text"
       placeholder="Наприклад: Тепер без пива не пускають до гуртожитку"
-      maxlength="50"
+      maxlength="70"
       required
       >
-      <p class="error-text" id="fieldError"></p>
+      <p class="error-text" id="titleError"></p>
    </div>
    <div class="field">
       <label for="categorySelect">Категорія</label>
       <select id="categorySelect" required>
-<option value="">Оберіть категорію...</option>
-<option value="news">Новини</option>
-<option value="events">Події</option>
-<option value="lost-found">Потєряшкі</option>
-<option value="study">Навчання</option>
-<option value="sport">Спорт</option>
-<option value="memes">Меми</option>
+<option value="Всі категорії">Оберіть категорію...</option>
+<option value="Новини">Новини</option>
+<option value="Події">Події</option>
+<option value="Загублені речі">Загублені речі</option>
+<option value="Навчання">Навчання</option>
+<option value="Спорт">Спорт</option>
+<option value="Меми">Меми</option>
       </select>
-      <p class="error-text" id="fieldError"></p>
+      <p class="error-text" id="categoryError"></p>
    </div>
 <div class="field">
-   <label for="massageInput">Текст оголошення</label>
+   <label for="messageInput">Текст оголошення</label>
    <textarea
    id="messageInput"
    rows="4"
    placeholder="Опишіть деталі...(Не обов'язково)"
-   maxlength="400"
+   maxlength="500"
    ></textarea>
-   <p class="error-text" id="fieldError"></p>
+   <p class="error-text" id="messageError"></p>
 </div>
 <div class="field">
 <label for="authorInput">Автор</label>
@@ -60,11 +60,14 @@ minlength="2"
 maxlength="25"
 required
 >
-<p class="error-text" id="fieldError"></p>
+<p class="error-text" id="authorError"></p>
 </div>
+<div class="form-actions">
 <button id="submit-btn" type="submit">Опублікувати</button>
-<button id="cancel-edit-btn" type="button" class="secondary-btn" style="display: none;">Скасувати</button>
+<button id="cancel-edit-btn" type="button" class="secondary-btn" hidden>Скасувати</button>
+</div>
 </form>
+<p id="status-message" hidden></p>
     </section>
 
     <section id="search-filter-section" class="panel">
@@ -72,13 +75,13 @@ required
    <div class="search-filter-field">
       <input id="searchInput" type="text" placeholder="Пошук за заголовком...">
       <select id="filterSelector">
-        <option value="all">Всі категорії</option>
-        <option value="news">Новини</option>
-        <option value="events">Події</option>
-        <option value="lost-found">Потєряшкі</option>
-        <option value="study">Навчання</option>
-        <option value="sport">Спорт</option>
-        <option value="memes">Меми</option>
+        <option value="Всі категорії">Всі категорії</option>
+        <option value="Новини">Новини</option>
+        <option value="Події">Події</option>
+        <option value="Загублені речі">Потєряшкі</option>
+        <option value="Навчання">Навчання</option>
+        <option value="Спорт">Спорт</option>
+        <option value="Меми">Меми</option>
       </select>
       <button id="clear-filters-btn">Скинути фільтри</button> 
    </div>
@@ -99,7 +102,7 @@ required
           <th>Дії</th>
       </tr>
    </thead>
-   <tbody id="posts-body"></tbody>
+   <tbody id="postsBody"></tbody>
 </table>
     </section>
  </main>

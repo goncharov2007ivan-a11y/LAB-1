@@ -20,6 +20,12 @@ h3 {margin-bottom: 20px;}
  border-radius: 6px;
  background-color: white;
 }
+.error-border {
+    border: 2px solid red !important;
+}
+.secondary-btn[hidden] {
+    display: none !important;
+}
 #post-list-section {
  margin-bottom: 20px;
  padding: 12px;
@@ -86,7 +92,7 @@ h2 {
 }
 .error-text {
  margin: 4px 0 0;
- font-size: 12px;
+ font-size: 16px;
  color: #c00;
  min-height: 14px; 
 }
@@ -99,10 +105,30 @@ h2 {
     padding: 15px;
     border-radius: 6px;
     border: none;
-    width: 100%;
-    box-shadow: 0 4px 6px rgba(121, 193, 66, 0.3);
-    margin-top: 10px;
     cursor: pointer;
+    flex: 2;
+    width: auto;
+    margin-top: 0px;
+}
+.secondary-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #333;
+    border-radius: 6px; 
+    font-size: 18px;
+    background-color: #79c142; 
+    font-weight: bold;
+    border: none;
+}
+.form-actions {
+    display: flex;
+    gap: 20px;
+    margin-top: 10px;
+}
+.form-actions button {
+    flex: 1;
 }
 input[type="text"], textarea, select {
     font-weight: 700; 
@@ -150,4 +176,14 @@ td {
 .delete-btn {
     background-color: #f8d7da; 
     color: #721c24;
+}
+#cancel-edit-btn {
+    cursor: pointer;
+
+}
+.col-desc {
+    max-width: 250px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
