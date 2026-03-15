@@ -1,5 +1,5 @@
 const uiKinds = {
-    ok: "ok", 
+    ok: "ok",
     loading: "loading",
     error: "error",
 };
@@ -9,12 +9,12 @@ const state = {
         kind: uiKinds.ok,
         message: "",
     },
-filters: {
-search: "",
-category: "Всі категорії",
-dateSort: "spad"
-},
-idEditing: null
+    filters: {
+        search: "",
+        category: "Всі категорії",
+        dateSort: "spad"
+    },
+    idEditing: null
 };
 const postsBody = document.getElementById('postsBody');
 const formSection = document.getElementById('create-post-section');
@@ -24,11 +24,11 @@ const filterSelector = document.querySelector('#filterSelector');
 const resetBtn = document.getElementById('clear-filters-btn');
 const cancelEditBtn = document.getElementById('cancel-edit-btn');
 const submitBtn = formSection.querySelector('button[type="submit"]');
-const dateSort = document.getElementById('dateSort'); 
+const dateSort = document.getElementById('dateSort');
 const sortArrow = document.getElementById('sortArrow');
 
 // доп функції
-function setUI (kind, message="") {
+function setUI(kind, message = "") {
     state.ui.kind = kind;
     state.ui.message = message;
 }
@@ -40,61 +40,61 @@ function clearError(fieldID, errorFieldID) {
     document.getElementById(fieldID).classList.remove("error-border");
     document.getElementById(errorFieldID).textContent = "";
 }
-function clearAllErrors () {
+function clearAllErrors() {
     const invalidInputs = document.querySelectorAll(".error-border");
     invalidInputs.forEach(input => {
         input.classList.remove("error-border")
     });
     const errorMsgs = document.querySelectorAll(".error-text");
-    errorMsgs.forEach (p => {
+    errorMsgs.forEach(p => {
         p.textContent = "";
     });
 }
 // render
 function render() {
-if (state.ui.kind === uiKinds.loading) {
-    statusMessage.hidden = false;
-    statusMessage.textContent = state.ui.message || "Завантаження...";
-    submitBtn.disabled = true;
-    renderList([]);
-    return;
-}
-if (state.ui.kind === uiKinds.error) {
-    statusMessage.hidden = false;
-    statusMessage.textContent = state.ui.message || "Помилка, спробуйте пізніше";
-    submitBtn.disabled = false;
-    renderList([])
-    return;
-}
-let filteredItems = state.items;
-if (state.filters.search) {
-    const lowerReg = state.filters.search.toLowerCase();
-    filteredItems = filteredItems.filter(item => 
-        item.title.toLowerCase().includes(lowerReg)
-    );
-}
-if (state.filters.category && state.filters.category !== "Всі категорії") {
-    filteredItems = filteredItems.filter(item => 
-        item.category === state.filters.category
-    );
-}
-filteredItems.sort((a, b) => {
-    const [dayA, monthA, yearA] = a.date.split('.');
-    const dateA = new Date(yearA, monthA, dayA).getTime();
-
-    const [dayB, monthB, yearB] = b.date.split('.');
-    const dateB = new Date(yearB, monthB, dayB).getTime();
-
-    if (state.filters.dateSort === "spad") {
-        return dateB - dateA;
-    } else {
-        return dateA - dateB;
+    if (state.ui.kind === uiKinds.loading) {
+        statusMessage.hidden = false;
+        statusMessage.textContent = state.ui.message || "Завантаження...";
+        submitBtn.disabled = true;
+        renderList([]);
+        return;
     }
-});
+    if (state.ui.kind === uiKinds.error) {
+        statusMessage.hidden = false;
+        statusMessage.textContent = state.ui.message || "Помилка, спробуйте пізніше";
+        submitBtn.disabled = false;
+        renderList([])
+        return;
+    }
+    let filteredItems = state.items;
+    if (state.filters.search) {
+        const lowerReg = state.filters.search.toLowerCase();
+        filteredItems = filteredItems.filter(item =>
+            item.title.toLowerCase().includes(lowerReg)
+        );
+    }
+    if (state.filters.category && state.filters.category !== "Всі категорії") {
+        filteredItems = filteredItems.filter(item =>
+            item.category === state.filters.category
+        );
+    }
+    filteredItems.sort((a, b) => {
+        const [dayA, monthA, yearA] = a.date.split('.');
+        const dateA = new Date(yearA, monthA - 1, dayA).getTime();
+
+        const [dayB, monthB, yearB] = b.date.split('.');
+        const dateB = new Date(yearB, monthB - 1, dayB).getTime();
+
+        if (state.filters.dateSort === "spad") {
+            return dateB - dateA;
+        } else {
+            return dateA - dateB;
+        }
+    });
 statusMessage.hidden = true;
 renderList(filteredItems);
 }
-function renderList (items) {
+function renderList(items) {
     postsBody.innerHTML = "";
     if (!items || items.length === 0) {
         postsBody.innerHTML = `<tr><td colspan="6" style="text-align: center;">Поки шо список ще порожній.</td></tr>`;
@@ -103,8 +103,8 @@ function renderList (items) {
     const htmlRows = items.map(post => renderItem(post));
     postsBody.innerHTML = htmlRows.join("");
 }
-function renderItem (item) {
-return `
+function renderItem(item) {
+    return `
 <tr data-id="${item.id}">
 <td>${item.title}</td>
 <td><span>${item.category}</span></td>
@@ -121,7 +121,7 @@ return `
 // Обробники подій
 function attachHandlers() {
     // submit
-    formSection.addEventListener("submit", (event) => { 
+    formSection.addEventListener("submit", (event) => {
         event.preventDefault();
         const object = readForm();
         const isValid = validate(object);
@@ -166,26 +166,26 @@ function readForm() {
     };
 }
 function validate(object) {
-clearAllErrors();
-let isValid = true;
-if (!object.title || object.title.length > 70) {
-    showError("titleInput", "titleError", "Заголовка немає або він більше 70 символів.");
-    isValid = false;
-}
-if (!object.category || object.category === "Всі категорії") {
-    showError("categorySelect", "categoryError", "Оберіть категорію");
-    isValid = false;
-}
-if (object.content.length > 500) {
-    showError("contentInput", "contentError", "Не більше 500 символів.");
-    isValid = false;
-}
-if (!object.author) {
-    showError("authorInput", "authorError", "Вкажіть автора.");
-    isValid = false;
-}
-return isValid;
-// додавання/видалення/редагування записів
+    clearAllErrors();
+    let isValid = true;
+    if (!object.title || object.title.length > 70) {
+        showError("titleInput", "titleError", "Заголовка немає або він більше 70 символів.");
+        isValid = false;
+    }
+    if (!object.category || object.category === "Всі категорії") {
+        showError("categorySelect", "categoryError", "Оберіть категорію");
+        isValid = false;
+    }
+    if (object.content.length > 500) {
+        showError("messageInput", "contentError", "Не більше 500 символів.");
+        isValid = false;
+    }
+    if (!object.author) {
+        showError("authorInput", "authorError", "Вкажіть автора.");
+        isValid = false;
+    }
+    return isValid;
+    // додавання/видалення/редагування записів
 }
 function addItem(object) {
     const newItem = {
@@ -221,10 +221,10 @@ function onListClick(event) {
     const rowID = row.dataset.id;
     if (!rowID) return;
     if (deleteBtn) {
-    state.items = state.items.filter(item => item.id != rowID);
-    localStorage.setItem("myItems", JSON.stringify(state.items));
-    render();
-    return;
+        state.items = state.items.filter(item => item.id != rowID);
+        localStorage.setItem("myItems", JSON.stringify(state.items));
+        render();
+        return;
     }
     if (editBtn) {
         const itemToEdit = state.items.find(item => item.id === rowID);
@@ -253,8 +253,8 @@ function onCategoryChange(event) {
 function onResetFilters() {
     state.filters.search = "";
     state.filters.category = "Всі категорії";
-    if (searchInput) searchInput.value="";
-    if(filterSelector) filterSelector.value="Всі категорії";
+    if (searchInput) searchInput.value = "";
+    if (filterSelector) filterSelector.value = "Всі категорії";
     render();
 }
 function onCancelEdit() {
@@ -267,23 +267,23 @@ function onCancelEdit() {
     if (cancelEditBtn) cancelEditBtn.hidden = true;
 }
 function onDateSort() {
-if (state.filters.dateSort === "spad") {
-    state.filters.dateSort = "zros";
-    sortArrow.textContent = "▲";
-} else {
-    state.filters.dateSort = "spad";
-    sortArrow.textContent = "▼";
-}
-render();
+    if (state.filters.dateSort === "spad") {
+        state.filters.dateSort = "zros";
+        sortArrow.textContent = "▲";
+    } else {
+        state.filters.dateSort = "spad";
+        sortArrow.textContent = "▼";
+    }
+    render();
 }
 // Завантаження з localStorage
 function loadDataFromStorage() {
-const savedItems = localStorage.getItem("myItems");
-if (savedItems) {
-    state.items = JSON.parse(savedItems)
+    const savedItems = localStorage.getItem("myItems");
+    if (savedItems) {
+        state.items = JSON.parse(savedItems)
+    }
 }
-}
-(function init(){
+(function init() {
     if (!formSection || !postsBody || !statusMessage) {
         console.error("Помилка знаходження елементів сторінки");
         return;
@@ -291,5 +291,5 @@ if (savedItems) {
     loadDataFromStorage();
     attachHandlers();
     render();
-    
-})(); 
+
+})();
