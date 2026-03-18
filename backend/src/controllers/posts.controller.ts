@@ -1,41 +1,56 @@
-import type { Request, Response } from "express";
+import type { Request, Response, NextFunction } from "express";
 import { postsService } from "../services/posts.service.js";
 export const postsController = {
-getAll: (req: Request, res: Response): void => {
-    const posts = postsService.getAll();
-    res.status(200).json(posts);
-},
-getById: (req: Request, res: Response): void => {
-    const id = req.params.id as string;
-    const post = postsService.getById(id);
-    if (!post) {
-        res.status(404).json({message: 'Не знайдено'});
-        return;
+  list: async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 10;
+      const offset = req.query.offset ? parseInt(req.query.offset as string, 10) : 0;
+
+      const category = req.query.category as string | undefined;
+      const search = req.query.search as string | undefined;
+      const dateSort = req.query.dateSort as string | undefined;
+
+      const result = await postsService.list({ limit, offset, category, search, dateSort });
+      res.status(200).json(result);
+    } catch (error) {
+      next(error);
     }
-    res.status(200).json(post);
-},
-create: (req: Request, res: Response): void => {
-    const dto = req.body;
-    const newPost = postsService.create(dto);
-    res.status(201).json(newPost);
-},
-update: (req: Request, res: Response): void => {
+  },
+  getById: async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const id = req.params.id as string;
+      const post = await postsService.getById(id);
+      res.status(200).json(post);
+    } catch (error) {
+      next(error);
+    }
+  },
+  create: async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const dto = req.body;
+      const newPost = await postsService.create(dto);
+      res.status(201).json(newPost);
+    } catch (error) {
+      next(error);
+    }
+  },
+  update: async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
     const id = req.params.id as string;
     const dto = req.body;
-    const updatedPost = postsService.update(id, dto);
-    if (!updatedPost) {
-        res.status(404).json({massage: 'Не знайдено'});
-        return;
-    }
+    const updatedPost = await postsService.update(id, dto);
     res.status(200).json(updatedPost);
-},
-delete: (req: Request, res: Response): void => {
-    const id = req.params.id as string;
-    const isDeleted = postsService.delete(id);
-    if (!isDeleted) {
-        res.status(404).json({massage: 'Не знайдено'});
-        return;
+    } catch (error) {
+      next(error);
     }
-    res.status(200).json(isDeleted);
-}
-}
+  },
+  delete: async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+    const id = req.params.id as string;
+    await postsService.delete(id);
+    res.status(204).send();
+    } catch(error) {
+      next(error);
+    }
+  },
+};

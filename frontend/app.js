@@ -12,10 +12,12 @@ const state = {
     filters: {
         search: "",
         category: "Всі категорії",
-        dateSort: "spad"
+        sortBy: "date",
+        sortOrder: "desc"
     },
     idEditing: null
 };
+const headers = document.querySelectorAll('.sortable');
 const postsBody = document.getElementById('postsBody');
 const formSection = document.getElementById('create-post-section');
 const statusMessage = document.getElementById('status-message');
@@ -24,8 +26,6 @@ const filterSelector = document.querySelector('#filterSelector');
 const resetBtn = document.getElementById('clear-filters-btn');
 const cancelEditBtn = document.getElementById('cancel-edit-btn');
 const submitBtn = formSection.querySelector('button[type="submit"]');
-const dateSort = document.getElementById('dateSort');
-const sortArrow = document.getElementById('sortArrow');
 
 // доп функції
 function setUI(kind, message = "") {
@@ -79,20 +79,20 @@ function render() {
         );
     }
     filteredItems.sort((a, b) => {
-        const [dayA, monthA, yearA] = a.date.split('.');
-        const dateA = new Date(yearA, monthA - 1, dayA).getTime();
-
-        const [dayB, monthB, yearB] = b.date.split('.');
-        const dateB = new Date(yearB, monthB - 1, dayB).getTime();
-
-        if (state.filters.dateSort === "spad") {
-            return dateB - dateA;
+        const field = state.filters.sortBy;
+        const direction = state.filters.sortOrder === "asc" ? 1 : -1;
+        if (field === "date") {
+            const timeA = new Date(a.date).getTime();
+            const timeB = new Date(b.date).getTime();
+            return (timeA - timeB)* direction;
         } else {
-            return dateA - dateB;
+            const textA = a[field].toString().toLowerCase();
+            const textB = b[field].toString().toLowerCase();
+            return textA.localeCompare(textB)* direction;
         }
     });
-statusMessage.hidden = true;
-renderList(filteredItems);
+    statusMessage.hidden = true;
+    renderList(filteredItems);
 }
 function renderList(items) {
     postsBody.innerHTML = "";
@@ -110,7 +110,7 @@ function renderItem(item) {
 <td><span>${item.category}</span></td>
 <td class="col-desc">${item.content}</td>
 <td>${item.author}</td>
-<td>${item.date}</td>
+<td>${new Date(item.date).toLocaleDateString()}</td>
 <td class="col-actions">
     <button type="button" class="action-btn edit-btn" data-action="edit">Редагувати</button>
     <button type="button" class="action-btn delete-btn" data-action="delete">Видалити</button>
@@ -152,9 +152,9 @@ function attachHandlers() {
     if (cancelEditBtn) {
         cancelEditBtn.addEventListener("click", onCancelEdit);
     }
-    if (dateSort) {
-        dateSort.addEventListener("click", onDateSort);
-    }
+    headers.forEach(header => {
+        header.addEventListener("click", onSort);
+    });
 }
 // чтиання, валідація та додавання у стейт форми
 function readForm() {
@@ -194,7 +194,7 @@ function addItem(object) {
         category: object.category,
         content: object.content,
         author: object.author,
-        date: new Date().toLocaleDateString('uk-UA')
+        date: new Date().toISOString()
     };
     state.items.push(newItem);
     localStorage.setItem("myItems", JSON.stringify(state.items));
@@ -266,13 +266,14 @@ function onCancelEdit() {
     submitBtn.style.color = "";
     if (cancelEditBtn) cancelEditBtn.hidden = true;
 }
-function onDateSort() {
-    if (state.filters.dateSort === "spad") {
-        state.filters.dateSort = "zros";
-        sortArrow.textContent = "▲";
+function onSort(event) {
+    const header = event.currentTarget;
+    const field = header.getAttribute("data-field");
+    if (state.filters.sortBy === field) {
+      state.filters.sortOrder = state.filters.sortOrder === "asc" ? "desc" : "asc";
     } else {
-        state.filters.dateSort = "spad";
-        sortArrow.textContent = "▼";
+        state.filters.sortBy = field;
+        state.filters.sortOrder = "asc";
     }
     render();
 }
@@ -292,4 +293,4 @@ function loadDataFromStorage() {
     attachHandlers();
     render();
 
-})();
+})(); 

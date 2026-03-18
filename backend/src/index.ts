@@ -5,5 +5,5 @@ const port = 3000;
 app.use(express.json());
 app.use("/api/v1/posts", postsRouter);
 app.listen(port, () => {
-    console.log('API працює')
+  console.log("API працює");
 });
