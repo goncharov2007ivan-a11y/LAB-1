@@ -6,7 +6,7 @@ export const errorHandler = (
     next: NextFunction
 ): void => {
     console.error(`[Error]: ${err.message}`);
-    if (err.message === "Пост не знайдено") {
+    if (err.message === "Пост не знайдено" || err.message === "Користувача не знайдено") {
         res.status(404).json({ message: "Пост не знайдено" });
         return;
     }

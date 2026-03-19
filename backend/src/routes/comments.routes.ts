@@ -1,0 +1,10 @@
+import { commentsController } from "../controllers/comments.controller.js";
+import { Router } from "express";
+import { validate } from "../middleware/validate.middleware.js";
+import { CreateCommentSchema, UpdateCommentSchema } from "../dtos/comments.dto.js";
+export const commentsRouter = Router();
+commentsRouter.get("/", commentsController.list);
+commentsRouter.get("/:id", commentsController.getById);
+commentsRouter.post("/", validate(CreateCommentSchema), commentsController.create);
+commentsRouter.patch("/:id", validate(UpdateCommentSchema), commentsController.update);
+commentsRouter.delete("/:id", commentsController.delete);
