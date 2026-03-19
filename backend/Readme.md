@@ -35,16 +35,19 @@
 ### 1. Перевірка валідації (Очікується 400 Bad Request)
 Спроба створити пост без обов'язкових полів:
 
+\`\`\`bash
 curl -i -X POST http://localhost:3000/api/v1/posts \
 -H "Content-Type: application/json" \
 -d "{\"content\":\"Текст без заголовка і автора\"}"
-
+\`\`\`
 
 ### 2. Успішне створення поста (Очікується 201 Created)
 
+\`\`\`bash
 curl -i -X POST http://localhost:3000/api/v1/posts \
 -H "Content-Type: application/json" \
 -d "{\"title\":\"Тестовий пост\",\"content\":\"Текст поста\",\"category\":\"Новини\",\"author\":\"Іван\"}"
+\`\`\`
 
 ### 3. Отримання списку з пагінацією та фільтрацією (Очікується 200 OK)
 
