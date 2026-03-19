@@ -1,6 +1,5 @@
 import { postsRepository } from '../repositories/posts.repository.js';
 import type { CreatePostDto, UpdatePostDto, PostViewDto, ListResponse, Post } from '../dtos/posts.dto.js';
-import { error } from 'node:console';
 export interface ListPostOptions {
   limit: number;
   offset: number;
