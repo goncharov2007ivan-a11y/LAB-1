@@ -18,7 +18,7 @@
 ## Реалізовані сутності та фічі
 - **Posts** 
 - **Users** 
-- **Posts** 
+- **Comments** 
 
 **Додаткові REST-можливості:**
 - Тришарова архітектура ( Controllers, Services, Repositories).
@@ -35,26 +35,29 @@
 ### 1. Перевірка валідації (Очікується 400 Bad Request)
 Спроба створити пост без обов'язкових полів:
 
-\`\`\`bash
+```bash
 curl -i -X POST http://localhost:3000/api/v1/posts \
 -H "Content-Type: application/json" \
 -d "{\"content\":\"Текст без заголовка і автора\"}"
-\`\`\`
+```
 
 ### 2. Успішне створення поста (Очікується 201 Created)
 
-\`\`\`bash
+```bash
 curl -i -X POST http://localhost:3000/api/v1/posts \
 -H "Content-Type: application/json" \
 -d "{\"title\":\"Тестовий пост\",\"content\":\"Текст поста\",\"category\":\"Новини\",\"author\":\"Іван\"}"
-\`\`\`
+```
 
 ### 3. Отримання списку з пагінацією та фільтрацією (Очікується 200 OK)
 
+```bash
 curl -i "http://localhost:3000/api/v1/posts?limit=2&category=Новини"
-
+```
 
 ### 4. Обробка помилки "Не знайдено" (Очікується 404 Not Found)
 Спроба отримати пост за неіснуючим ID:
 
+```bash
 curl -i http://localhost:3000/api/v1/posts/999999999
+```
