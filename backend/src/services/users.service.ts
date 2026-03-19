@@ -1,5 +1,11 @@
-import { usersRepository } from '../repositories/users.repository.js';
-import type { CreateUserDto, UpdateUserDto, UserViewDto, ListResponse, User } from '../dtos/users.dto.js';
+import { usersRepository } from "../repositories/users.repository.js";
+import type {
+  CreateUserDto,
+  UpdateUserDto,
+  UserViewDto,
+  ListResponse,
+  User,
+} from "../dtos/users.dto.js";
 import { randomUUID } from "node:crypto";
 export interface ListUserOptions {
   limit: number;
@@ -12,25 +18,29 @@ function toUserViewDto(user: User): UserViewDto {
     id: user.id,
     name: user.name,
     email: user.email,
-    date: user.date
+    date: user.date,
   };
 }
 export const usersService = {
-  list: async (options: ListUserOptions): Promise<ListResponse<UserViewDto>> => {
+  list: async (
+    options: ListUserOptions,
+  ): Promise<ListResponse<UserViewDto>> => {
     const { limit, offset, search, dateSort } = options;
     let allUsers = await usersRepository.getAll();
-    allUsers = allUsers.filter(u => !u.isDeleted)
+    allUsers = allUsers.filter((u) => !u.isDeleted);
     // filter
-   
+
     if (search) {
       const lowerSearch = search.toLowerCase();
-      allUsers = allUsers.filter(u => u.name.toLowerCase().includes(lowerSearch));
+      allUsers = allUsers.filter((u) =>
+        u.name.toLowerCase().includes(lowerSearch),
+      );
     }
     if (dateSort) {
       allUsers.sort((a, b) => {
         const dateA = new Date(a.date).getTime();
         const dateB = new Date(b.date).getTime();
-        return dateSort === "asc" ? dateA-dateB : dateB-dateA;
+        return dateSort === "asc" ? dateA - dateB : dateB - dateA;
       });
     }
     // пагінація
@@ -40,10 +50,10 @@ export const usersService = {
       items: paginatedUsers.map(toUserViewDto),
       total: totalItems,
       limit,
-      offset
+      offset,
     };
   },
-  getById: async (id:string): Promise<UserViewDto> => {
+  getById: async (id: string): Promise<UserViewDto> => {
     const user = await usersRepository.getById(id);
     if (!user || user.isDeleted) {
       throw new Error("Користувача не знайдено");
@@ -55,7 +65,7 @@ export const usersService = {
       id: randomUUID(),
       ...dto,
       date: new Date().toISOString(),
-      isDeleted: false
+      isDeleted: false,
     };
     const createdUser = await usersRepository.create(newUser);
     return toUserViewDto(createdUser);
@@ -69,10 +79,10 @@ export const usersService = {
     return toUserViewDto(updatedUser!);
   },
   delete: async (id: string): Promise<boolean> => {
-    const existingUser =await usersRepository.getById(id);
+    const existingUser = await usersRepository.getById(id);
     if (!existingUser || existingUser.isDeleted) {
       throw new Error("Користувача не знайдено");
     }
     return usersRepository.delete(id);
-  }
+  },
 };

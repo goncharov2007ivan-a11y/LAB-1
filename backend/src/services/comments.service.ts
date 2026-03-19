@@ -1,5 +1,11 @@
-import { commentsRepository } from '../repositories/comments.repository.js';
-import type { CreateCommentDto, UpdateCommentDto, CommentViewDto, ListResponse, Comment } from '../dtos/comments.dto.js';
+import { commentsRepository } from "../repositories/comments.repository.js";
+import type {
+  CreateCommentDto,
+  UpdateCommentDto,
+  CommentViewDto,
+  ListResponse,
+  Comment,
+} from "../dtos/comments.dto.js";
 import { randomUUID } from "node:crypto";
 export interface ListCommentOptions {
   limit: number;
@@ -14,27 +20,31 @@ function toCommentViewDto(comment: Comment): CommentViewDto {
     authorID: comment.authorID,
     postID: comment.postID,
     text: comment.text,
-    date: comment.date
+    date: comment.date,
   };
 }
 export const commentsService = {
-  list: async (options: ListCommentOptions): Promise<ListResponse<CommentViewDto>> => {
+  list: async (
+    options: ListCommentOptions,
+  ): Promise<ListResponse<CommentViewDto>> => {
     const { limit, offset, postID, search, dateSort } = options;
     let allComments = await commentsRepository.getAll();
-    allComments = allComments.filter(c => !c.isDeleted)
+    allComments = allComments.filter((c) => !c.isDeleted);
     // filter
     if (postID) {
-        allComments = allComments.filter(c => c.postID === postID);
+      allComments = allComments.filter((c) => c.postID === postID);
     }
     if (search) {
       const lowerSearch = search.toLowerCase();
-      allComments = allComments.filter(c => c.text.toLowerCase().includes(lowerSearch));
+      allComments = allComments.filter((c) =>
+        c.text.toLowerCase().includes(lowerSearch),
+      );
     }
     if (dateSort) {
       allComments.sort((a, b) => {
         const dateA = new Date(a.date).getTime();
         const dateB = new Date(b.date).getTime();
-        return dateSort === "asc" ? dateA-dateB : dateB-dateA;
+        return dateSort === "asc" ? dateA - dateB : dateB - dateA;
       });
     }
     // пагінація
@@ -44,10 +54,10 @@ export const commentsService = {
       items: paginatedComments.map(toCommentViewDto),
       total: totalItems,
       limit,
-      offset
+      offset,
     };
   },
-  getById: async (id:string): Promise<CommentViewDto> => {
+  getById: async (id: string): Promise<CommentViewDto> => {
     const comment = await commentsRepository.getById(id);
     if (!comment || comment.isDeleted) {
       throw new Error("Коментар не знайдено");
@@ -59,24 +69,30 @@ export const commentsService = {
       id: randomUUID(),
       ...dto,
       date: new Date().toISOString(),
-      isDeleted: false
+      isDeleted: false,
     };
     const createdComment = await commentsRepository.create(newComment);
     return toCommentViewDto(createdComment);
   },
-  update: async (id: string, dto: UpdateCommentDto): Promise<CommentViewDto> => {
+  update: async (
+    id: string,
+    dto: UpdateCommentDto,
+  ): Promise<CommentViewDto> => {
     const existingComment = await commentsRepository.getById(id);
     if (!existingComment || existingComment.isDeleted) {
       throw new Error("Коментар не знайдено");
     }
-    const updatedComment = await commentsRepository.update(id, dto as Partial<Comment>);
+    const updatedComment = await commentsRepository.update(
+      id,
+      dto as Partial<Comment>,
+    );
     return toCommentViewDto(updatedComment!);
   },
   delete: async (id: string): Promise<boolean> => {
-    const existingComment =await commentsRepository.getById(id);
+    const existingComment = await commentsRepository.getById(id);
     if (!existingComment || existingComment.isDeleted) {
       throw new Error("Коментар не знайдено");
     }
     return commentsRepository.delete(id);
-  }
+  },
 };
