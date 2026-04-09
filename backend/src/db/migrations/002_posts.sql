@@ -1,0 +1,10 @@
+CREATE TABLE IF NOT EXISTS Posts (
+    id INTEGER PRIMARY KEY,
+    title TEXT NOT NULL,
+    categoty TEXT NOT NULL,
+    content TEXT NOT NULL,
+    authorId INTEGER NOT NULL,
+    date TEXT NOT NULL,
+    isDeleted INTEGER DEFAULT 0,
+    FOREIGN KEY (authorId) REFERENCES Users (id) ON DELETE CASCADE
+);

@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS Users (
+    id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL,
+    email TEXT NOT NULL UNIQUE,
+    date TEXT NOT NULL,
+    isDeleted INTEGER DEFAULT 0
+);
