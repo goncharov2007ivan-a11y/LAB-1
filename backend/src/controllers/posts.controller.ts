@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
 import { postsService } from "../services/posts.service.js";
+import { postsRepository } from "../repositories/posts.repository.js";
 export const postsController = {
   list: async (
     req: Request,
@@ -14,9 +15,9 @@ export const postsController = {
         ? parseInt(req.query.offset as string, 10)
         : 0;
 
-      const category = req.query.category as string | undefined;
-      const search = req.query.search as string | undefined;
-      const dateSort = req.query.dateSort as string | undefined;
+      const category = req.query.category as string;
+      const search = req.query.search as string;
+      const dateSort = req.query.dateSort as string;
 
       const result = await postsService.list({
         limit,
@@ -83,4 +84,12 @@ export const postsController = {
       next(error);
     }
   },
+  stats: async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const stats = await postsRepository.getStats(); 
+      res.status(200).json({ data: stats });
+    } catch (error) {
+      next(error);
+    }
+  }
 };

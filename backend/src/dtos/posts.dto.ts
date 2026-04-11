@@ -8,21 +8,22 @@ export interface Post {
   date: string;
   isDeleted: boolean;
 }
+export const allowedCategories = ["Новини", "Події", "Загублені речі", "Навчання", "Спорт", "Меми"] as const;
 export const CreatePostSchema = z.object({
   body: z.object({
     title: z
       .string({ message: "Заголовок обов'язковий" })
       .min(1, "Заголовок не може бути порожнім")
       .max(70, "Заголовок не може бути довшим за 70 символів"),
-    category: z
-      .string({ message: "Категорія обов'язкова" })
-      .min(1, "Оберіть категорію"),
+    category: z.enum(allowedCategories, {
+    message: "Невірна категорія, оберіть одну із дозволених."
+    }),
     content: z
       .string({ message: "Текст поста обов'язковий" })
       .max(500, "Текст не більше 500 символів"),
-    author: z
-      .string({ message: "Автор обов'язковий" })
-      .min(1, "Вкажіть автора"),
+    authorId: z
+      .number({ message: "ID автора обов'язковий" })
+      .positive("ID має бути додатнім"),
   }),
 });
 

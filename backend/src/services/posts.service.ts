@@ -6,13 +6,13 @@ import type {
   ListResponse,
   Post,
 } from "../dtos/posts.dto.js";
-import { randomUUID } from "node:crypto";
+
 export interface ListPostOptions {
   limit: number;
   offset: number;
-  category?: string | undefined;
-  search?: string | undefined;
-  dateSort?: string | undefined;
+  category?: string;
+  search?: string;
+  dateSort?: string;
 }
 function toPostViewDto(post: Post): PostViewDto {
   return {
@@ -25,52 +25,31 @@ function toPostViewDto(post: Post): PostViewDto {
   };
 }
 export const postsService = {
-  list: async (
-    options: ListPostOptions,
-  ): Promise<ListResponse<PostViewDto>> => {
-    const { limit, offset, category, search, dateSort } = options;
-    let allPosts = await postsRepository.getAll();
-    allPosts = allPosts.filter((p) => !p.isDeleted);
-    // filter
-    if (category && category != "Всі категорії") {
-      allPosts = allPosts.filter((p) => p.category === category);
-    }
-    if (search) {
-      const lowerSearch = search.toLowerCase();
-      allPosts = allPosts.filter((p) =>
-        p.title.toLowerCase().includes(lowerSearch),
-      );
-    }
-    if (dateSort) {
-      allPosts.sort((a, b) => {
-        const dateA = new Date(a.date).getTime();
-        const dateB = new Date(b.date).getTime();
-        return dateSort === "asc" ? dateA - dateB : dateB - dateA;
-      });
-    }
-    // пагінація
-    const totalItems = allPosts.length;
-    let paginatedPosts = allPosts.slice(offset, offset + limit);
+  list: async (options: ListPostOptions,): Promise<ListResponse<PostViewDto>> => {
+    const { items, total } = await postsRepository.getFiltered(options);
     return {
-      items: paginatedPosts.map(toPostViewDto),
-      total: totalItems,
-      limit,
-      offset,
+      items: items.map(toPostViewDto),
+      total,
+      limit: options.limit,
+      offset: options.offset,
     };
   },
   getById: async (id: string): Promise<PostViewDto> => {
     const post = await postsRepository.getById(id);
+    
     if (!post || post.isDeleted) {
       throw new Error("Пост не знайдено");
     }
+    
     return toPostViewDto(post);
   },
-  create: async (dto: CreatePostDto): Promise<PostViewDto> => {
-    const newPost: Post = {
-      id: randomUUID(),
-      ...dto,
+  create: async (dto: any): Promise<PostViewDto> => {
+    const newPost = {
+      title: dto.title,
+      category: dto.category,
+      content: dto.content,
       date: new Date().toISOString(),
-      isDeleted: false,
+      authorId: dto.authorID
     };
     const createdPost = await postsRepository.create(newPost);
     return toPostViewDto(createdPost);

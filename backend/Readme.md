@@ -1,65 +1,45 @@
-# Лабораторна робота №2 (Бекенд без БД)
+# Дошка оголошень (Лабораторна робота №3)
 
 ## Як запустити проєкт
+1. Встановити залежності: `npm install`
+2. Заповнити базу тестовими даними (опційно): `npx tsx src/db/seed.ts`
+3. Запустити сервер у режимі розробки: `npm run dev`
+Сервер працюватиме на `http://localhost:3000`. 
+Файл бази даних автоматично створюється за шляхом `./data/app.db`.
 
-1. Відкрийте термінал і перейдіть у папку бекенду:
+## Схема Бази Даних
+База даних складається з трьох пов'язаних таблиць.
 
-   cd backend
+1. **Users** (Користувачі)
+   - `id` INTEGER PRIMARY KEY
+   - `name` TEXT NOT NULL
+   - `email` TEXT NOT NULL UNIQUE (Обмеження: не можна створити двох юзерів з однаковим email)
+   - `date` TEXT NOT NULL
 
-2. Встановіть залежності:
+2. **Posts** (Оголошення)
+   - `id` INTEGER PRIMARY KEY
+   - `title`, `category`, `content`, `date` TEXT NOT NULL
+   - `authorId` INTEGER NOT NULL (Зовнішній ключ -> Users.id. `ON DELETE CASCADE`)
 
-   npm install
+3. **Comments** (Коментарі)
+   - `id` INTEGER PRIMARY KEY
+   - `text`, `date` TEXT NOT NULL
+   - `postId` INTEGER NOT NULL (Зовнішній ключ -> Posts.id. `ON DELETE CASCADE`)
+   - `authorId` INTEGER NOT NULL (Зовнішній ключ -> Users.id. `ON DELETE RESTRICT`)
 
-3. Запустіть сервер у режимі розробника:
+Додано індекс `idx_posts_category` на таблицю `Posts` для пришвидшення фільтрації за категоріями.
 
-   npm run dev
+## Приклади API Запитів
+Отримати статистику (агрегація COUNT) категорій:
+`curl http://localhost:3000/api/v1/posts/stats`
 
-## Реалізовані сутності та фічі
+Отримати пости (з фільтрацією, пагінацією та сортуванням БД):
+`curl "http://localhost:3000/api/v1/posts?category=Електроніка&limit=5&dateSort=desc"`
 
-- **Posts**
-- **Users**
-- **Comments**
+## Вразливість SQL Injection (Демонстрація)
+Ендпойнт `GET /api/v1/posts` навмисно залишено вразливим до SQL-ін'єкцій через параметр `search` (для демонстрації в рамках ЛР №3).
+У репозиторії запит формується через конкатенацію: `LIKE '%${options.search}%'`.
 
-**Додаткові REST-можливості:**
-
-- Тришарова архітектура ( Controllers, Services, Repositories).
-- Валідація вхідних даних через zod + Middleware.
-- Централізована обробка помилок (Error Handler).
-- Логування запитів.
-- Пагінація (`limit`, `offset`), Фільтрація (`category`) та Сортування.
-- М'яке видалення (Soft Delete).
-- DTO для приховування внутрішніх полів (наприклад, `isDeleted`).
-
-## Перевірки
-
-### 1. Перевірка валідації (Очікується 400 Bad Request)
-
-Спроба створити пост без обов'язкових полів:
-
-```bash
-curl -i -X POST http://localhost:3000/api/v1/posts \
--H "Content-Type: application/json" \
--d "{\"content\":\"Текст без заголовка і автора\"}"
-```
-
-### 2. Успішне створення поста (Очікується 201 Created)
-
-```bash
-curl -i -X POST http://localhost:3000/api/v1/posts \
--H "Content-Type: application/json" \
--d "{\"title\":\"Тестовий пост\",\"content\":\"Текст поста\",\"category\":\"Новини\",\"author\":\"Іван\"}"
-```
-
-### 3. Отримання списку з пагінацією та фільтрацією (Очікується 200 OK)
-
-```bash
-curl -i "http://localhost:3000/api/v1/posts?limit=2&category=Новини"
-```
-
-### 4. Обробка помилки "Не знайдено" (Очікується 404 Not Found)
-
-Спроба отримати пост за неіснуючим ID:
-
-```bash
-curl -i http://localhost:3000/api/v1/posts/999999999
-```
+**Приклад злому:**
+Якщо відправити запит: `curl "http://localhost:3000/api/v1/posts?search=' OR 1=1 --"`
+Запит до БД перетвориться на: `WHERE p.title LIKE '%' OR 1=1 --%'`, що змусить базу проігнорувати всі інші фільтри (зокрема перевірку на `isDeleted = 0`) і видати абсолютно всі записи.

@@ -6,6 +6,10 @@ export const errorHandler = (
   next: NextFunction,
 ): void => {
   console.error(`[Error]: ${err.message}`);
+  if (err.message.includes("UNIQUE constraint failed")) {
+    res.status(409).json({ message: "Дані вже існують (порушення унікальності)" });
+    return;
+  }
   if (
     err.message === "Пост не знайдено" ||
     err.message === "Користувача не знайдено"

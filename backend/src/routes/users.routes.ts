@@ -1,9 +1,11 @@
-import { usersController } from "../controllers/users.controller.js";
 import { Router } from "express";
+import { usersController } from "../controllers/users.controller.js";
 import { validate } from "../middleware/validate.middleware.js";
 import { CreateUserSchema, UpdateUserSchema } from "../dtos/users.dto.js";
+
 export const usersRouter = Router();
-usersRouter.get("/", usersController.list);
+
+usersRouter.get("/", usersController.getAll);
 usersRouter.get("/:id", usersController.getById);
 usersRouter.post("/", validate(CreateUserSchema), usersController.create);
 usersRouter.patch("/:id", validate(UpdateUserSchema), usersController.update);

@@ -1,38 +1,16 @@
 import type { Request, Response, NextFunction } from "express";
 import { usersService } from "../services/users.service.js";
+
 export const usersController = {
-  list: async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> => {
+  getAll: async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const limit = req.query.limit
-        ? parseInt(req.query.limit as string, 10)
-        : 10;
-      const offset = req.query.offset
-        ? parseInt(req.query.offset as string, 10)
-        : 0;
-
-      const search = req.query.search as string | undefined;
-      const dateSort = req.query.dateSort as string | undefined;
-
-      const result = await usersService.list({
-        limit,
-        offset,
-        search,
-        dateSort,
-      });
-      res.status(200).json(result);
+      const users = await usersService.getAll();
+      res.status(200).json(users);
     } catch (error) {
       next(error);
     }
   },
-  getById: async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> => {
+  getById: async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const id = req.params.id as string;
       const user = await usersService.getById(id);
@@ -41,38 +19,24 @@ export const usersController = {
       next(error);
     }
   },
-  create: async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> => {
+  create: async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const dto = req.body;
-      const newUser = await usersService.create(dto);
+      const newUser = await usersService.create(req.body);
       res.status(201).json(newUser);
     } catch (error) {
       next(error);
     }
   },
-  update: async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> => {
+  update: async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const id = req.params.id as string;
-      const dto = req.body;
-      const updatedUser = await usersService.update(id, dto);
+      const updatedUser = await usersService.update(id, req.body);
       res.status(200).json(updatedUser);
     } catch (error) {
       next(error);
     }
   },
-  delete: async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> => {
+  delete: async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const id = req.params.id as string;
       await usersService.delete(id);

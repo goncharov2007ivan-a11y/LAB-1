@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS Posts (
     id INTEGER PRIMARY KEY,
     title TEXT NOT NULL,
-    categoty TEXT NOT NULL,
+    category TEXT NOT NULL,
     content TEXT NOT NULL,
     authorId INTEGER NOT NULL,
     date TEXT NOT NULL,
