@@ -12,30 +12,32 @@ export async function migrate() {
         appliedAt TEXT NOT NULL
         );
     `);
-    const migrationsDir = path.join(import.meta.dirname, 'migrations');
-    if(!fs.existsSync(migrationsDir)) {
-        console.log("Папка migrations не знайдена");
-        return;
-    }
+  const migrationsDir = path.join(import.meta.dirname, "migrations");
+  if (!fs.existsSync(migrationsDir)) {
+    console.log("Папка migrations не знайдена");
+    return;
+  }
 
-    const files = fs.readdirSync(migrationsDir)
-    .filter(f => f.endsWith('.sql'))
+  const files = fs
+    .readdirSync(migrationsDir)
+    .filter((f) => f.endsWith(".sql"))
     .sort();
-    const applied = await all<{filename: string}>("SELECT filename FROM schema_migrations;");
-    const appliedSet = new Set(applied.map(x => x.filename));
+  const applied = await all<{ filename: string }>(
+    "SELECT filename FROM schema_migrations;",
+  );
+  const appliedSet = new Set(applied.map((x) => x.filename));
 
-    for (const file of files) {
-        if(appliedSet.has(file)) continue;
-        const fullPath = path.join(migrationsDir, file);
-        const sql = fs.readFileSync(fullPath, "utf8").trim();
+  for (const file of files) {
+    if (appliedSet.has(file)) continue;
+    const fullPath = path.join(migrationsDir, file);
+    const sql = fs.readFileSync(fullPath, "utf8").trim();
 
-        if (!sql) continue;
-        await run(sql);
+    if (!sql) continue;
+    await run(sql);
 
-        await run(`
+    await run(`
             INSERT INTO schema_migrations (filename, appliedAt)
             VALUES ('${file}', '${new Date().toISOString()}')
             `);
-    }
+  }
 }
-

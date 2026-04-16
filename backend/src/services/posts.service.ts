@@ -25,7 +25,9 @@ function toPostViewDto(post: Post): PostViewDto {
   };
 }
 export const postsService = {
-  list: async (options: ListPostOptions,): Promise<ListResponse<PostViewDto>> => {
+  list: async (
+    options: ListPostOptions,
+  ): Promise<ListResponse<PostViewDto>> => {
     const { items, total } = await postsRepository.getFiltered(options);
     return {
       items: items.map(toPostViewDto),
@@ -36,11 +38,11 @@ export const postsService = {
   },
   getById: async (id: string): Promise<PostViewDto> => {
     const post = await postsRepository.getById(id);
-    
+
     if (!post || post.isDeleted) {
       throw new Error("Пост не знайдено");
     }
-    
+
     return toPostViewDto(post);
   },
   create: async (dto: any): Promise<PostViewDto> => {
@@ -49,7 +51,7 @@ export const postsService = {
       category: dto.category,
       content: dto.content,
       date: new Date().toISOString(),
-      authorId: dto.authorID
+      authorId: dto.authorID,
     };
     const createdPost = await postsRepository.create(newPost);
     return toPostViewDto(createdPost);

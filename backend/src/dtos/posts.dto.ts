@@ -8,7 +8,14 @@ export interface Post {
   date: string;
   isDeleted: boolean;
 }
-export const allowedCategories = ["Новини", "Події", "Загублені речі", "Навчання", "Спорт", "Меми"] as const;
+export const allowedCategories = [
+  "Новини",
+  "Події",
+  "Загублені речі",
+  "Навчання",
+  "Спорт",
+  "Меми",
+];
 export const CreatePostSchema = z.object({
   body: z.object({
     title: z
@@ -16,7 +23,7 @@ export const CreatePostSchema = z.object({
       .min(1, "Заголовок не може бути порожнім")
       .max(70, "Заголовок не може бути довшим за 70 символів"),
     category: z.enum(allowedCategories, {
-    message: "Невірна категорія, оберіть одну із дозволених."
+      message: "Невірна категорія, оберіть одну із дозволених.",
     }),
     content: z
       .string({ message: "Текст поста обов'язковий" })

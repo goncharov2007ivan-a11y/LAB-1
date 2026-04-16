@@ -1,12 +1,15 @@
 import { commentsRepository } from "../repositories/comments.repository.js";
-import type { CreateCommentDto, UpdateCommentDto, CommentViewDto } from "../dtos/comments.dto.js";
-
+import type {
+  CreateCommentDto,
+  UpdateCommentDto,
+  CommentViewDto,
+} from "../dtos/comments.dto.js";
 
 function toCommentViewDto(comment: any): CommentViewDto {
   return {
     id: String(comment.id),
     text: comment.text,
-    author: comment.authorName, 
+    author: comment.authorName,
     postId: String(comment.postId),
     date: comment.date,
   };
@@ -29,7 +32,10 @@ export const commentsService = {
     return toCommentViewDto(createdComment);
   },
 
-  update: async (id: string, dto: UpdateCommentDto): Promise<CommentViewDto> => {
+  update: async (
+    id: string,
+    dto: UpdateCommentDto,
+  ): Promise<CommentViewDto> => {
     const updatedComment = await commentsRepository.update(id, dto);
     if (!updatedComment) throw new Error("Коментар не знайдено");
     return toCommentViewDto(updatedComment);

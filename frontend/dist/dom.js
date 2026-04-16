@@ -1,0 +1,11 @@
+export const viewList = document.getElementById('view-list');
+export const viewForm = document.getElementById('view-form');
+export const viewPost = document.getElementById('view-post');
+export const postsBody = document.getElementById('posts-body');
+export const categoryListItems = document.querySelectorAll('.category-menu li');
+export const createPostBtn = document.getElementById('create-post-btn');
+export const backToListBtn = document.getElementById('back-to-list-btn');
+export const authBtn = document.getElementById('auth-btn');
+export const userGreeting = document.getElementById('user-greeting');
+export const userNameDisplay = document.getElementById('user-name-display');
+export const sidebar = document.querySelector('.sidebar');

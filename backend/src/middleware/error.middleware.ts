@@ -7,7 +7,9 @@ export const errorHandler = (
 ): void => {
   console.error(`[Error]: ${err.message}`);
   if (err.message.includes("UNIQUE constraint failed")) {
-    res.status(409).json({ message: "Дані вже існують (порушення унікальності)" });
+    res
+      .status(409)
+      .json({ message: "Дані вже існують (порушення унікальності)" });
     return;
   }
   if (

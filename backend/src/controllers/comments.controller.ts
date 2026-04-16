@@ -2,7 +2,11 @@ import type { Request, Response, NextFunction } from "express";
 import { commentsService } from "../services/comments.service.js";
 
 export const commentsController = {
-  getByPostId: async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  getByPostId: async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
     try {
       const postId = req.params.postId as string;
       const comments = await commentsService.getByPostId(postId);
@@ -11,7 +15,11 @@ export const commentsController = {
       next(error);
     }
   },
-  create: async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  create: async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
     try {
       const newComment = await commentsService.create(req.body);
       res.status(201).json(newComment);
@@ -19,7 +27,11 @@ export const commentsController = {
       next(error);
     }
   },
-  update: async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  update: async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
     try {
       const id = req.params.id as string;
       const updatedComment = await commentsService.update(id, req.body);
@@ -28,7 +40,11 @@ export const commentsController = {
       next(error);
     }
   },
-  delete: async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  delete: async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
     try {
       const id = req.params.id as string;
       await commentsService.delete(id);

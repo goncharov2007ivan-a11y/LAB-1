@@ -6,7 +6,7 @@ import { allowedCategories } from "../dtos/posts.dto.js";
 export const postsRouter = Router();
 postsRouter.get("/", postsController.list);
 postsRouter.get("/categories", (req, res) => {
-    res.json({ data: allowedCategories });
+  res.json({ data: allowedCategories });
 });
 postsRouter.get("/stats", postsController.stats);
 postsRouter.get("/:id", postsController.getById);

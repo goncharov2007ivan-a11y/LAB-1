@@ -1,107 +1,105 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="uk">
 <head>
- <meta charset="utf-8" />
- <meta name="viewport" content="width=device-width, initial-scale=1" />
- <title>ЛР1 – Варіант №4</title>
- <link rel="stylesheet" href="styles.css" />
- <script src="app.js" defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Дошка оголошень</title>
+    <link rel="stylesheet" href="styles.css">
+    <script type="module" src="./dist/main.js" defer></script>
 </head>
-
 <body>
- <header>
-<h1>Дошка оголошень групи (варіант N4)</h1>
-</header>
- <main class ="page"> 
-    <section id ="create-post-section" class="panel">
-<h2>Додати оголошення</h2>
-<form id="create-form" novalidate>
-   <div class="field">
-      <label for="titleInput">Заголовок</label>
-      <input 
-      id="titleInput"
-      type="text"
-      placeholder="Наприклад: Тепер без пива не пускають до гуртожитку"
-      maxlength="70"
-      required
-      >
-      <p class="error-text" id="titleError"></p>
-   </div>
-   <div class="field">
-      <label for="categorySelect">Категорія</label>
-      <select id="categorySelect" required>
-<option value="Всі категорії">Оберіть категорію...</option>
-<option value="Новини">Новини</option>
-<option value="Події">Події</option>
-<option value="Загублені речі">Загублені речі</option>
-<option value="Навчання">Навчання</option>
-<option value="Спорт">Спорт</option>
-<option value="Меми">Меми</option>
-      </select>
-      <p class="error-text" id="categoryError"></p>
-   </div>
-<div class="field">
-   <label for="messageInput">Текст оголошення</label>
-   <textarea
-   id="messageInput"
-   rows="4"
-   placeholder="Опишіть деталі...(Не обов'язково)"
-   maxlength="500"
-   ></textarea>
-   <p class="error-text" id="messageError"></p>
-</div>
-<div class="field">
-<label for="authorInput">Автор</label>
-<input
-id="authorInput"
-type="text"
-placeholder="Ваше ім'я"
-minlength="2"
-maxlength="25"
-required
->
-<p class="error-text" id="authorError"></p>
-</div>
-<div class="form-actions">
-<button id="submit-btn" type="submit">Опублікувати</button>
-<button id="cancel-edit-btn" type="button" class="secondary-btn" hidden>Скасувати</button>
-</div>
-</form>
-<p id="status-message" hidden></p>
-    </section>
+    <header class="app-header">
+        <div class="logo">KpiBoard</div>
+        
+        <div class="user-panel">
+            <button type="button" id="auth-btn" class="btn outline">Увійти</button>
+            <span id="user-greeting" hidden>Привіт, <span id="user-name-display"></span></span>
+        </div>
+    </header>
 
-    <section id="search-filter-section" class="panel">
-      <h2>Список оголошень</h2>
-   <div class="search-filter-field">
-      <input id="searchInput" type="text" placeholder="Пошук за заголовком...">
-      <select id="filterSelector">
-        <option value="Всі категорії">Всі категорії</option>
-        <option value="Новини">Новини</option>
-        <option value="Події">Події</option>
-        <option value="Загублені речі">Потєряшкі</option>
-        <option value="Навчання">Навчання</option>
-        <option value="Спорт">Спорт</option>
-        <option value="Меми">Меми</option>
-      </select>
-      <button id="clear-filters-btn">Скинути фільтри</button> 
-   </div>
-    </section>
-    <section id="post-list-section" class="panel">
+    <div class="layout-wrapper">
+        
+        <div class="sidebar">
+            <h3>Категорії</h3>
+            <ul id="category-list" class="category-menu">
+                <li class="active" data-category="all">Всі категорії</li>
+                <li data-category="Новини">Новини</li>
+                <li data-category="Події">Події</li>
+                <li data-category="Загублені речі">Загублені речі</li>
+                <li data-category="Навчання">Навчання</li>
+                <li data-category="Спорт">Спорт</li>
+                <li data-category="Меми">Меми</li>
+            </ul>
+         </div>
 
-<table>
-   <thead>
-      <tr>
-         <th class="sortable" data-field="title">Заголовок</th>
-         <th class="sortable" data-field="category">Категорія</th>
-         <th class="sortable" data-field="content">Текст</th>
-         <th class="sortable" data-field="author">Автор</th>
-         <th class="sortable" data-field="date" >Дата</th> 
-          <th>Дії</th>
-      </tr>
-   </thead>
-   <tbody id="postsBody"></tbody>
-</table>
-    </section>
- </main>
+        <main id="app-root" class="content">
+            
+            <div id="view-list" class="view-section">
+                
+                <div class="toolbar">
+                    <div class="search-box">
+                        <input type="text" id="search-input" placeholder="Пошук за заголовком...">
+                    </div>
+                    <button type="button" id="create-post-btn" class="btn primary">Створити пост</button>
+                </div>
+
+                <div class="table-container">
+                    <table id="posts-table">
+                        <thead>
+                            <tr>
+                                <th class="sortable" data-field="title">Заголовок</th>
+                                <th class="sortable" data-field="category">Категорія</th>
+                                <th>Текст</th>
+                                <th class="sortable" data-field="authorName">Автор</th>
+                                <th class="sortable" data-field="date">Дата</th>
+                                <th>Дії</th>
+                            </tr>
+                        </thead>
+                        <tbody id="posts-body">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+            <div id="view-form" class="view-section" hidden>
+    <div class="toolbar">
+        <h2>Створити оголошення</h2>
+        <button type="button" id="back-to-list-btn" class="btn outline">Назад до списку</button>
+    </div>
+
+    <form id="create-post-form" class="panel">
+        <div class="field">
+            <label for="title">Заголовок</label>
+            <input type="text" id="title" name="title" required maxlength="70" placeholder="Що продаємо/шукаємо?">
+        </div>
+
+        <div class="field">
+            <label for="category">Категорія</label>
+            <select id="category" name="category" required>
+                <option value="" disabled selected>Оберіть категорію...</option>
+                <option value="Новини">Новини</option>
+                <option value="Події">Події</option>
+                <option value="Загублені речі">Загублені речі</option>
+                <option value="Навчання">Навчання</option>
+                <option value="Спорт">Спорт</option>
+                <option value="Меми">Меми</option>
+            </select>
+        </div>
+
+        <div class="field">
+            <label for="content">Текст оголошення</label>
+            <textarea id="content" name="content" rows="4" maxlength="500" placeholder="Опишіть деталі..."></textarea>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn primary">Опублікувати</button>
+        </div>
+    </form>
+</div>
+            <div id="view-post" class="view-section" hidden>
+                </div>
+
+        </main>
+    </div>
+
 </body>
 </html>

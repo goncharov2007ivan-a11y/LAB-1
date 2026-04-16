@@ -84,12 +84,16 @@ export const postsController = {
       next(error);
     }
   },
-  stats: async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  stats: async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
     try {
-      const stats = await postsRepository.getStats(); 
+      const stats = await postsRepository.getStats();
       res.status(200).json({ data: stats });
     } catch (error) {
       next(error);
     }
-  }
+  },
 };

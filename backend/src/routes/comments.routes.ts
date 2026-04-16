@@ -1,12 +1,23 @@
 import { Router } from "express";
 import { commentsController } from "../controllers/comments.controller.js";
 import { validate } from "../middleware/validate.middleware.js";
-import { CreateCommentSchema, UpdateCommentSchema } from "../dtos/comments.dto.js";
+import {
+  CreateCommentSchema,
+  UpdateCommentSchema,
+} from "../dtos/comments.dto.js";
 
 export const commentsRouter = Router();
 
 commentsRouter.get("/post/:postId", commentsController.getByPostId);
 
-commentsRouter.post("/", validate(CreateCommentSchema), commentsController.create);
-commentsRouter.patch("/:id", validate(UpdateCommentSchema), commentsController.update);
+commentsRouter.post(
+  "/",
+  validate(CreateCommentSchema),
+  commentsController.create,
+);
+commentsRouter.patch(
+  "/:id",
+  validate(UpdateCommentSchema),
+  commentsController.update,
+);
 commentsRouter.delete("/:id", commentsController.delete);

@@ -11,13 +11,13 @@ interface CreatePostData {
 
 function mapToPost(row: any): Post {
   return {
-    id: String(row.id),              
+    id: String(row.id),
     title: row.title,
     category: row.category,
     content: row.content,
-    author: row.authorName,         
+    author: row.authorName,
     date: row.date,
-    isDeleted: row.isDeleted === 1,  
+    isDeleted: row.isDeleted === 1,
   };
 }
 
@@ -69,7 +69,7 @@ export const postsRepository = {
       VALUES ('${safeTitle}', '${safeCategory}', '${safeContent}', ${post.authorId}, '${safeDate}', 0);
     `;
     const result = await run(sql);
-    
+
     const createdPost = `
     SELECT p.id, p.title, p.category, p.content, p.date, p.isDeleted, u.name as authorName 
     FROM Posts p 
@@ -80,7 +80,10 @@ export const postsRepository = {
     return mapToPost(row);
   },
 
-  update: async ( id: string, updatedFields: Partial<Post>): Promise<Post | null> => {
+  update: async (
+    id: string,
+    updatedFields: Partial<Post>,
+  ): Promise<Post | null> => {
     const postId = Number(id);
 
     const safeTitle = escapeSqlString(updatedFields.title || "");
@@ -116,9 +119,9 @@ export const postsRepository = {
     let whereInj = "WHERE p.isDeleted = 0";
 
     if (options.search) {
-      whereInj += ` AND p.title LIKE '%${options.search}%'`; 
+      whereInj += ` AND p.title LIKE '%${options.search}%'`;
     }
-    
+
     if (options.category && options.category !== "Всі категорії") {
       const safeCategory = escapeSqlString(options.category);
       whereInj += ` AND p.category = '${safeCategory}'`;
@@ -126,7 +129,10 @@ export const postsRepository = {
 
     let orderClause = "ORDER BY p.id DESC";
     if (options.dateSort) {
-       orderClause = options.dateSort === "asc" ? "ORDER BY p.date ASC" : "ORDER BY p.date DESC";
+      orderClause =
+        options.dateSort === "asc"
+          ? "ORDER BY p.date ASC"
+          : "ORDER BY p.date DESC";
     }
 
     const countSql = `SELECT COUNT(*) as total FROM Posts p ${whereInj};`;
@@ -142,11 +148,11 @@ export const postsRepository = {
       LIMIT ${options.limit} OFFSET ${options.offset};
     `;
     const rows = await all<any>(sql);
-    
+
     return { items: rows.map(mapToPost), total };
   },
 
-  getStats: async (): Promise<{ category: string, count: number }[]> => {
+  getStats: async (): Promise<{ category: string; count: number }[]> => {
     const sql = `
       SELECT category, COUNT(*) as count 
       FROM Posts 
@@ -154,5 +160,5 @@ export const postsRepository = {
       GROUP BY category;
     `;
     return await all(sql);
-  }
+  },
 };

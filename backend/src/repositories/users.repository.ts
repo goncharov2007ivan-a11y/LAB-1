@@ -12,7 +12,11 @@ export const usersRepository = {
     return await get<any>(sql);
   },
 
-  create: async (data: { name: string; email: string; date: string }): Promise<any> => {
+  create: async (data: {
+    name: string;
+    email: string;
+    date: string;
+  }): Promise<any> => {
     const safeName = escapeSqlString(data.name);
     const safeEmail = escapeSqlString(data.email);
     const safeDate = escapeSqlString(data.date);
@@ -22,23 +26,28 @@ export const usersRepository = {
       VALUES ('${safeName}', '${safeEmail}', '${safeDate}', 0);
     `;
     const result = await run(sql);
-    
+
     const createdSql = `SELECT * FROM Users WHERE id = ${result.lastID};`;
     return await get<any>(createdSql);
   },
 
-  update: async (id: string, updatedFields: { name?: string | undefined; email?: string | undefined}): Promise<any | null> => {
+  update: async (
+    id: string,
+    updatedFields: { name?: string | undefined; email?: string | undefined },
+  ): Promise<any | null> => {
     const userId = Number(id);
     let setQuery = [];
-    
-    if (updatedFields.name) setQuery.push(`name = '${escapeSqlString(updatedFields.name)}'`);
-    if (updatedFields.email) setQuery.push(`email = '${escapeSqlString(updatedFields.email)}'`);
+
+    if (updatedFields.name)
+      setQuery.push(`name = '${escapeSqlString(updatedFields.name)}'`);
+    if (updatedFields.email)
+      setQuery.push(`email = '${escapeSqlString(updatedFields.email)}'`);
 
     if (setQuery.length === 0) return await usersRepository.getById(id);
 
     const sql = `UPDATE Users SET ${setQuery.join(", ")} WHERE id = ${userId} AND isDeleted = 0;`;
     const result = await run(sql);
-    
+
     if (result.changes === 0) return null;
     return await usersRepository.getById(id);
   },
