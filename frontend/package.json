@@ -1,13 +1,13 @@
 {
   "name": "frontend",
   "version": "1.0.0",
-  "description": "**Тема:** Дошка оголошень групи\r **Ключова сутність:** Оголошення\r ## Функціонал\r * Додавання нових оголошень.\r * Відображення списку оголошень у таблиці.\r * Можливість зміни та видалення оголошень із списку\r * Пошук оголошень за заголовком \r * Фільтрація оголошень за категорією\r ## Запуск\r Python:  \r python -m http.server 8080",
-  "main": "app.js",
   "devDependencies": {
     "typescript": "^6.0.2"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "python -m http.server 8080",
+    "watch": "tsc --watch"
   },
   "keywords": [],
   "author": "",

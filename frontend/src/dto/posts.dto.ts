@@ -3,7 +3,8 @@ export interface PostViewDto {
     title: string;
     category: string;
     content: string;
-    authorName: string;
+    author: string;
+    authorId: number;
     date: string;
 }
 

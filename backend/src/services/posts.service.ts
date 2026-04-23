@@ -21,6 +21,7 @@ function toPostViewDto(post: Post): PostViewDto {
     category: post.category,
     content: post.content,
     author: post.author,
+    authorId: post.authorId,
     date: post.date,
   };
 }
@@ -45,13 +46,13 @@ export const postsService = {
 
     return toPostViewDto(post);
   },
-  create: async (dto: any): Promise<PostViewDto> => {
+  create: async (dto: CreatePostDto): Promise<PostViewDto> => {
     const newPost = {
       title: dto.title,
       category: dto.category,
       content: dto.content,
       date: new Date().toISOString(),
-      authorId: dto.authorID,
+      authorId: dto.authorId,
     };
     const createdPost = await postsRepository.create(newPost);
     return toPostViewDto(createdPost);
@@ -71,4 +72,5 @@ export const postsService = {
     }
     return postsRepository.delete(id);
   },
+
 };

@@ -77,8 +77,18 @@ export const postsController = {
     next: NextFunction,
   ): Promise<void> => {
     try {
-      const id = req.params.id as string;
-      await postsService.delete(id);
+      const postId = req.params.id as string;
+      const requestingUserId = req.header('User-Id');
+      const post = await postsService.getById(postId);
+      if(!post) {
+        res.status(404).json({ message: "Пост не знайдено" });
+          return;
+      }
+      if (post.author.toString() !== requestingUserId) {
+          res.status(403).json({ message: "Заборонено! Ви не можете видалити чужий пост." });
+          return;
+      }
+      await postsService.delete(postId);
       res.status(204).send();
     } catch (error) {
       next(error);

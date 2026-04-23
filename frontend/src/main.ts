@@ -1,6 +1,10 @@
 import { showView } from './app.js';
 import { handleAuth, initAuth } from './components/auth.js';
 import { handleCreatePostSubmit } from './views/createForm.js';
+import { loadPosts } from './views/postsList.js';
+
+showView('List');
+await loadPosts();
 
 document.addEventListener('click', (event) => {
     const target = event.target as HTMLElement;
@@ -21,7 +25,7 @@ document.addEventListener('click', (event) => {
         return;
     }
     if(target.closest('#back-to-list-btn')) {
-        console.log('Idi ff');
+        console.log('Id ff');
         showView('List');
     }
 

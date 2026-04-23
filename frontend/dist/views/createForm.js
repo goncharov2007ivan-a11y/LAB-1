@@ -1,6 +1,9 @@
 import { state } from '../state.js';
 import { showView } from '../app.js';
-export function handleCreatePostSubmit(formElement) {
+import { api } from '../api.js';
+import { showNotice } from '../ui.js';
+import { loadPosts } from './postsList.js';
+export async function handleCreatePostSubmit(formElement) {
     if (!state.currentUserId) {
         alert("Помилка: Спочатку увійдіть в систему (кнопка в правому верхньому куті)!");
         return;
@@ -12,8 +15,15 @@ export function handleCreatePostSubmit(formElement) {
         content: formData.get('content'),
         authorId: state.currentUserId
     };
-    console.log("Готово до відправки на сервер:", newPostData);
-    alert("Пост успішно створено! (Поки що тільки в консолі)");
-    formElement.reset();
-    showView('List');
+    try {
+        await api.createPost(newPostData);
+        showNotice("Пост успішно створено!");
+        formElement.reset();
+        showView('List');
+        await loadPosts();
+    }
+    catch (error) {
+        showNotice("Помилка, не вдалося створити пост", true);
+        console.error(error);
+    }
 }

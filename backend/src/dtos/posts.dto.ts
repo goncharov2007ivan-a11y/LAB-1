@@ -5,6 +5,7 @@ export interface Post {
   category: string;
   content: string;
   author: string;
+  authorId: number;
   date: string;
   isDeleted: boolean;
 }
@@ -45,6 +46,7 @@ export interface PostViewDto {
   category: string;
   content: string;
   author: string;
+  authorId: number;
   date: string;
 }
 export interface ListResponse<T> {

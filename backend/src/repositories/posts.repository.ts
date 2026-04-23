@@ -16,6 +16,7 @@ function mapToPost(row: any): Post {
     category: row.category,
     content: row.content,
     author: row.authorName,
+    authorId: row.authorId,
     date: row.date,
     isDeleted: row.isDeleted === 1,
   };

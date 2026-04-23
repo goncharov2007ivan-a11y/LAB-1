@@ -1,4 +1,4 @@
-import express, { type Request, type Response } from "express";
+import express from "express";
 import cors from 'cors';
 import { postsRouter } from "./routes/posts.routes.js";
 import { usersRouter } from "./routes/users.routes.js";

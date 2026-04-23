@@ -46,4 +46,5 @@ export const usersService = {
     const isDeleted = await usersRepository.delete(id);
     if (!isDeleted) throw new Error("Користувача не знайдено");
   },
+  
 };
