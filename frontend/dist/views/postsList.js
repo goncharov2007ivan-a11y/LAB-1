@@ -18,7 +18,7 @@ function renderListStatus(status, errorMessage) {
 export async function loadPosts() {
     renderListStatus('loading');
     try {
-        const posts = await api.getPosts();
+        const posts = await api.getPosts(state.filters.category);
         if (!posts || posts.length === 0) {
             renderListStatus('empty');
             return;

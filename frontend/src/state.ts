@@ -27,7 +27,7 @@ export const state: AppState = {
     ui: { kind: uiKinds.ok, message: "" },
     filters: { 
         search: "", 
-        category: "all", 
+        category: "Всі категорії", 
         sortBy: "date", 
         sortOrder: "desc" 
     },

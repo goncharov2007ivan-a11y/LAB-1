@@ -6,8 +6,12 @@ export const api = {
             throw new Error("Помилка сервера");
         return response.json();
     },
-    getPosts: async () => {
-        const response = await fetch(`${BASE_URL}/posts`);
+    getPosts: async (category) => {
+        let url = `${BASE_URL}/posts`;
+        if (category) {
+            url += `?category=${encodeURIComponent(category)}`;
+        }
+        const response = await fetch(url);
         if (!response.ok)
             throw new Error("Помилка сервера");
         const result = await response.json();

@@ -2,22 +2,29 @@ import { showView } from './app.js';
 import { handleAuth, initAuth } from './components/auth.js';
 import { handleCreatePostSubmit } from './views/createForm.js';
 import { loadPosts } from './views/postsList.js';
+import { state } from './state.js';
 
 showView('List');
 await loadPosts();
 
 document.addEventListener('click', (event) => {
     const target = event.target as HTMLElement;
-
-    const categoryItem = target.closest('.category-menu li') as HTMLElement;
-    if (categoryItem) {
-        document.querySelectorAll('.category-menu li').forEach(li => li.classList.remove('active'));
-        categoryItem.classList.add('active');
+    
+    const categoryList = document.getElementById('category-list');
+categoryList?.addEventListener('click', async (event) => {
+    const target = event.target as HTMLElement;
+    
+    if (target.tagName === 'LI' || target.classList.contains('category-item')) {
+        const selectedCategory = target.dataset.category || target.textContent || "";
         
-    const category = categoryItem.dataset.category;
-        console.log('Обрано категорію:', category);
-        return;
+        state.filters.category = selectedCategory === "Всі категорії" ? "": selectedCategory;
+        
+        categoryList.querySelectorAll('li').forEach(li => li.classList.remove('active'));
+        target.classList.add('active');
+        
+        await loadPosts();
     }
+});
 
     const createBtn = target.closest('#create-post-btn');
     if (createBtn) {
@@ -25,7 +32,6 @@ document.addEventListener('click', (event) => {
         return;
     }
     if(target.closest('#back-to-list-btn')) {
-        console.log('Id ff');
         showView('List');
     }
 
