@@ -18,7 +18,7 @@ app.use(cors({
     return cb(new Error("CORS: origin is not allowed"), false);
   },
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"]
+  allowedHeaders: ["Content-Type", "Authorization", 'User-Id']
 }));
 app.options(/.*/, cors());
 app.use(express.json());

@@ -1,6 +1,7 @@
 import { api } from "../api.js";
 import { state } from "../state.js";
-import * as DOM from "../dom.js"
+import { authBtn, userGreeting, userNameDisplay } from "../dom.js"
+import { loadPosts } from "../views/postsList.js";
 
 export async function handleAuth() {
     if(state.currentUserId) {
@@ -8,6 +9,7 @@ export async function handleAuth() {
         localStorage.removeItem('currentUserId');
         localStorage.removeItem('currentUserName');
         updateAuthUI();
+        await loadPosts();
         return;
     }
 
@@ -25,8 +27,11 @@ export async function handleAuth() {
         state.currentUserId = user.id;
         localStorage.setItem('currentUserId', String(user.id));
         localStorage.setItem('currentUserName', user.name || user.email);
+
         updateAuthUI();
+        await loadPosts();
         alert(`Вітаємо, ви успішно увійшли!`);
+        
     } catch (error) {
         alert("Помилка входу");
         console.error(error);
@@ -36,14 +41,14 @@ export function updateAuthUI() {
     const savedName = localStorage.getItem('currentUserName');
     
     if (state.currentUserId && savedName) {
-        DOM.authBtn.textContent = "Вийти";
-        DOM.authBtn.classList.replace('primary', 'outline');
-        DOM.userNameDisplay.textContent = savedName;
-        DOM.userGreeting.hidden = false;
+        authBtn.textContent = "Вийти";
+        authBtn.classList.replace('primary', 'outline');
+        userNameDisplay.textContent = savedName;
+        userGreeting.hidden = false;
     } else {
-        DOM.authBtn.textContent = "Увійти";
-        DOM.authBtn.classList.replace('outline', 'primary');
-        DOM.userGreeting.hidden = true;
+        authBtn.textContent = "Увійти";
+        authBtn.classList.replace('outline', 'primary');
+        userGreeting.hidden = true;
     }
 }
 export function initAuth() {

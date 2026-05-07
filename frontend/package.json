@@ -6,8 +6,8 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "python -m http.server 8080",
-    "watch": "tsc --watch"
+    "serve": "http-server . -p 8080",
+    "watch": "tsc -w"
   },
   "keywords": [],
   "author": "",

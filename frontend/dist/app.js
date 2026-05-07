@@ -1,14 +1,14 @@
-import * as DOM from './dom.js';
+import { sidebar, viewForm, viewList, viewPost } from './dom.js';
 import { loadPosts } from './views/postsList.js';
 export async function showView(viewName) {
-    DOM.viewList.hidden = DOM.viewForm.hidden = DOM.viewPost.hidden = DOM.sidebar.hidden = true;
+    viewList.hidden = viewForm.hidden = viewPost.hidden = sidebar.hidden = true;
     if (viewName === 'List') {
         await loadPosts();
-        DOM.viewList.hidden = false;
-        DOM.sidebar.hidden = false;
+        viewList.hidden = false;
+        sidebar.hidden = false;
     }
     if (viewName === 'Form')
-        DOM.viewForm.hidden = false;
+        viewForm.hidden = false;
     if (viewName === 'Post')
-        DOM.viewPost.hidden = false;
+        viewPost.hidden = false;
 }

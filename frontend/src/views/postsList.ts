@@ -1,29 +1,36 @@
 import { api } from "../api.js";
-import * as DOM from '../dom.js';
+import { postsBody } from '../dom.js';
 import { PostViewDto } from "../dto/posts.dto.js";
 import { state } from '../state.js';
 
 function renderListStatus(status: 'loading' | 'empty' | 'error' | 'success', errorMessage?: string) {
     if (status === 'loading') {
-        DOM.postsBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Завантаження...</td></tr>';
+        postsBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Завантаження...</td></tr>';
     } else if (status === 'empty') {
-        DOM.postsBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Оголошень поки немає</td></tr>';
+        postsBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Оголошень поки немає</td></tr>';
     } else if (status === 'error') {
-        DOM.postsBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: red;">Помилка: ${errorMessage}</td></tr>`;
+        postsBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: red;">Помилка: ${errorMessage}</td></tr>`;
     } else {
-        DOM.postsBody.innerHTML = ''; 
+        postsBody.innerHTML = ''; 
     }
 }
 
 export async function loadPosts() {
     renderListStatus('loading');
     try {
-        const posts = await api.getPosts(state.filters.category);
+        const categoryToSend = state.filters.category === "Всі категорії" ? "" : state.filters.category;
+        const posts = await api.getPosts(
+            categoryToSend,
+            state.filters.search,
+            state.filters.page,
+            state.filters.limit
+        );
         if(!posts || posts.length === 0) {
             renderListStatus('empty');
             return;
         }
         renderListStatus('success');
+        postsBody.innerHTML = '';
         posts.forEach((post: PostViewDto) => {
             const tr = document.createElement('tr');
 
@@ -31,10 +38,7 @@ export async function loadPosts() {
             titleTd.textContent = post.title;
 
             const categoryTd = document.createElement('td');
-            const badge = document.createElement('span');
-            badge.className = 'badge';
-            badge.textContent = post.category;
-            categoryTd.appendChild(badge);
+            categoryTd.textContent = post.category;
 
             const contentTd = document.createElement('td');
             contentTd.textContent = post.content;
@@ -54,7 +58,7 @@ export async function loadPosts() {
             `;
 
             tr.append(titleTd, categoryTd, contentTd, authorTd, dateTd, actionsTd);
-            DOM.postsBody.appendChild(tr);
+            postsBody.appendChild(tr);
         });
 
     } catch (error: any) {

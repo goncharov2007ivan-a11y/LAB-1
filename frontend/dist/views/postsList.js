@@ -1,38 +1,37 @@
 import { api } from "../api.js";
-import * as DOM from '../dom.js';
+import { postsBody } from '../dom.js';
 import { state } from '../state.js';
 function renderListStatus(status, errorMessage) {
     if (status === 'loading') {
-        DOM.postsBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Завантаження...</td></tr>';
+        postsBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Завантаження...</td></tr>';
     }
     else if (status === 'empty') {
-        DOM.postsBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Оголошень поки немає</td></tr>';
+        postsBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Оголошень поки немає</td></tr>';
     }
     else if (status === 'error') {
-        DOM.postsBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: red;">Помилка: ${errorMessage}</td></tr>`;
+        postsBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: red;">Помилка: ${errorMessage}</td></tr>`;
     }
     else {
-        DOM.postsBody.innerHTML = '';
+        postsBody.innerHTML = '';
     }
 }
 export async function loadPosts() {
     renderListStatus('loading');
     try {
-        const posts = await api.getPosts(state.filters.category);
+        const categoryToSend = state.filters.category === "Всі категорії" ? "" : state.filters.category;
+        const posts = await api.getPosts(categoryToSend, state.filters.search, state.filters.page, state.filters.limit);
         if (!posts || posts.length === 0) {
             renderListStatus('empty');
             return;
         }
         renderListStatus('success');
+        postsBody.innerHTML = '';
         posts.forEach((post) => {
             const tr = document.createElement('tr');
             const titleTd = document.createElement('td');
             titleTd.textContent = post.title;
             const categoryTd = document.createElement('td');
-            const badge = document.createElement('span');
-            badge.className = 'badge';
-            badge.textContent = post.category;
-            categoryTd.appendChild(badge);
+            categoryTd.textContent = post.category;
             const contentTd = document.createElement('td');
             contentTd.textContent = post.content;
             const authorTd = document.createElement('td');
@@ -46,7 +45,7 @@ export async function loadPosts() {
                 ${isMyPost ? `<button type="button" class="btn delete small" data-delete-id="${post.id}">Видалити</button>` : ''}
             `;
             tr.append(titleTd, categoryTd, contentTd, authorTd, dateTd, actionsTd);
-            DOM.postsBody.appendChild(tr);
+            postsBody.appendChild(tr);
         });
     }
     catch (error) {

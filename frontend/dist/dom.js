@@ -1,8 +1,11 @@
 export const viewList = document.getElementById('view-list');
 export const viewForm = document.getElementById('view-form');
 export const viewPost = document.getElementById('view-post');
+export const createPostForm = document.getElementById('create-post-form');
 export const postsBody = document.getElementById('posts-body');
 export const categoryListItems = document.querySelectorAll('.category-menu li');
+export const categoryList = document.getElementById('category-list');
+export const searchInput = document.getElementById('search-input');
 export const createPostBtn = document.getElementById('create-post-btn');
 export const backToListBtn = document.getElementById('back-to-list-btn');
 export const authBtn = document.getElementById('auth-btn');
