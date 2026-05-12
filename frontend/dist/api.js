@@ -21,9 +21,21 @@ export const api = {
         if (params.length > 0) {
             url += "?" + params.join("&");
         }
-        const response = await fetch(url);
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 5000);
+        let response;
+        try {
+            response = await fetch(url, { signal: controller.signal });
+            clearTimeout(timeout);
+        }
+        catch (error) {
+            if (error.name === "AbortError") {
+                throw new Error("Перевищено час очікування. Сервер не відповідає");
+            }
+            throw new Error("Сервер наївся і спить. Перевірте з'єднання або спробуйте пізніше.");
+        }
         if (!response.ok)
-            throw new Error("Помилка сервера");
+            throw new Error("Помилка сервера: не вдалося завантажити оголошення");
         const result = await response.json();
         return result.items;
     },
@@ -69,19 +81,15 @@ export const api = {
     },
     getComments: async (postId) => {
         const url = `http://localhost:3000/api/v1/comments/post/${postId}`;
-        console.log(`[API] 1. Відправляємо GET запит на: ${url}`);
         try {
             const response = await fetch(url);
-            console.log(`[API] 2. Сервер відповів зі статусом: ${response.status}`);
             if (!response.ok) {
                 throw new Error(`Помилка: ${response.status}`);
             }
             const data = await response.json();
-            console.log(`[API] 3. Отримані дані від сервера:`, data);
             return data;
         }
         catch (error) {
-            console.error(`[API] Помилка fetch:`, error);
             throw error;
         }
     },

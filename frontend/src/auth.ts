@@ -1,7 +1,7 @@
-import { api } from "../api.js";
-import { state } from "../state.js";
-import { authBtn, userGreeting, userNameDisplay } from "../dom.js"
-import { loadPosts } from "../views/postsList.js";
+import { api } from "./api.js";
+import { state } from "./state.js";
+import { authBtn, userGreeting, userNameDisplay } from "./dom.js"
+import { loadPosts } from "./views/postsList.js";
 
 export async function handleAuth() {
     if(state.currentUserId) {

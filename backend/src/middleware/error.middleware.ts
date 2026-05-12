@@ -19,5 +19,5 @@ export const errorHandler = (
     res.status(404).json({ message: "Пост не знайдено" });
     return;
   }
-  res.status(500).json({ message: "Внутрішня помилка сервера" });
+  res.status(500).json({ message: err.stack });
 };

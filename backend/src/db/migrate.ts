@@ -12,7 +12,7 @@ export async function migrate() {
         appliedAt TEXT NOT NULL
         );
     `);
-  const migrationsDir = path.join(import.meta.dirname, "migrations");
+  const migrationsDir = path.join(process.cwd(), 'src', 'db', 'migrations');
   if (!fs.existsSync(migrationsDir)) {
     console.log("Папка migrations не знайдена");
     return;

@@ -1,5 +1,6 @@
 export const uiKinds = {
     ok: "ok",
+    empty: "empty",
     loading: "loading",
     error: "error",
 };

@@ -1,55 +1,97 @@
 import { api } from "../api.js";
 import { postsBody } from '../dom.js';
-import { state } from '../state.js';
-function renderListStatus(status, errorMessage) {
-    if (status === 'loading') {
-        postsBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Завантаження...</td></tr>';
+import { state, uiKinds } from '../state.js';
+function renderPosts() {
+    postsBody.innerHTML = '';
+    if (state.ui.kind === uiKinds.loading) {
+        postsBody.innerHTML = '<tr><td colspan="6">Завантаження...</td></tr>';
+        return;
     }
-    else if (status === 'empty') {
-        postsBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Оголошень поки немає</td></tr>';
+    if (state.ui.kind === uiKinds.empty) {
+        postsBody.innerHTML = '<tr><td colspan="6">Оголошень поки немає</td></tr>';
+        return;
     }
-    else if (status === 'error') {
-        postsBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: red;">Помилка: ${errorMessage}</td></tr>`;
+    if (state.ui.kind === uiKinds.error) {
+        postsBody.innerHTML = `
+        <tr>
+            <td colspan="6">
+                <strong>Помилка: ${state.ui.message}</strong><br>
+                <span>
+                    Що робити: Перевірте підключення до інтернету, переконайтеся, що сервер запущено, або спробуйте оновити сторінку через кілька хвилин.
+                </span>
+            </td>
+        </tr>`;
+        return;
     }
-    else {
-        postsBody.innerHTML = '';
-    }
+    state.items.forEach((post) => {
+        const tr = document.createElement('tr');
+        const titleTd = document.createElement('td');
+        titleTd.innerHTML = post.title;
+        const categoryTd = document.createElement('td');
+        categoryTd.innerHTML = post.category;
+        const contentTd = document.createElement('td');
+        contentTd.innerHTML = post.content;
+        const authorTd = document.createElement('td');
+        authorTd.innerHTML = post.author;
+        const dateTd = document.createElement('td');
+        dateTd.innerHTML = new Date(post.date).toLocaleDateString('uk-UA');
+        const actionsTd = document.createElement('td');
+        const isMyPost = post.authorId === state.currentUserId;
+        actionsTd.innerHTML = `
+            <button type="button" class="btn outline small" data-view-id="${post.id}">Деталі</button>
+            ${isMyPost ? `<button type="button" class="btn delete small" data-delete-id="${post.id}">Видалити</button>` : ''}
+        `;
+        tr.append(titleTd, categoryTd, contentTd, authorTd, dateTd, actionsTd);
+        postsBody.appendChild(tr);
+    });
 }
 export async function loadPosts() {
-    renderListStatus('loading');
+    state.ui.kind = uiKinds.loading;
+    renderPosts();
     try {
         const categoryToSend = state.filters.category === "Всі категорії" ? "" : state.filters.category;
         const posts = await api.getPosts(categoryToSend, state.filters.search, state.filters.page, state.filters.limit);
         if (!posts || posts.length === 0) {
-            renderListStatus('empty');
-            return;
+            state.ui.kind = uiKinds.empty;
+            state.items = [];
         }
-        renderListStatus('success');
-        postsBody.innerHTML = '';
-        posts.forEach((post) => {
-            const tr = document.createElement('tr');
-            const titleTd = document.createElement('td');
-            titleTd.textContent = post.title;
-            const categoryTd = document.createElement('td');
-            categoryTd.textContent = post.category;
-            const contentTd = document.createElement('td');
-            contentTd.textContent = post.content;
-            const authorTd = document.createElement('td');
-            authorTd.textContent = post.author;
-            const dateTd = document.createElement('td');
-            dateTd.textContent = new Date(post.date).toLocaleDateString('uk-UA');
-            const actionsTd = document.createElement('td');
-            const isMyPost = post.authorId === state.currentUserId;
-            actionsTd.innerHTML = `
-                <button type="button" class="btn outline small" data-view-id="${post.id}">Деталі</button>
-                ${isMyPost ? `<button type="button" class="btn delete small" data-delete-id="${post.id}">Видалити</button>` : ''}
-            `;
-            tr.append(titleTd, categoryTd, contentTd, authorTd, dateTd, actionsTd);
-            postsBody.appendChild(tr);
-        });
+        else {
+            state.ui.kind = uiKinds.ok;
+            state.items = posts;
+            renderPagination(posts.length);
+        }
+        renderPosts();
     }
     catch (error) {
         console.error(error);
-        renderListStatus('error', error.message || 'Не вдалося завантажити дані з сервера');
+        state.ui.kind = uiKinds.error;
+        state.ui.message = error.message || 'Не вдалося завантажити дані з сервера';
+        renderPosts();
     }
+}
+function renderPagination(currentItemsCount) {
+    const paginationContainer = document.getElementById('pagination');
+    if (!paginationContainer)
+        return;
+    paginationContainer.innerHTML = '';
+    const prevBtn = document.createElement('button');
+    prevBtn.textContent = '← Попередня';
+    prevBtn.className = 'btn outline';
+    prevBtn.disabled = state.filters.page === 1;
+    prevBtn.onclick = () => {
+        state.filters.page -= 1;
+        loadPosts();
+    };
+    const pageIndicator = document.createElement('span');
+    pageIndicator.textContent = `Сторінка ${state.filters.page}`;
+    pageIndicator.style.alignSelf = 'center';
+    const nextBtn = document.createElement('button');
+    nextBtn.textContent = 'Наступна →';
+    nextBtn.className = 'btn outline';
+    nextBtn.disabled = currentItemsCount < state.filters.limit;
+    nextBtn.onclick = () => {
+        state.filters.page += 1;
+        loadPosts();
+    };
+    paginationContainer.append(prevBtn, pageIndicator, nextBtn);
 }

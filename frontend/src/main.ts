@@ -1,5 +1,5 @@
 import { showView } from './app.js';
-import { handleAuth, initAuth } from './components/auth.js';
+import { handleAuth, initAuth } from './auth.js';
 import { handleCreatePostSubmit } from './views/createForm.js';
 import { loadPosts } from './views/postsList.js';
 import { state } from './state.js';

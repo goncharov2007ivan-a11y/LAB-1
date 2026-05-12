@@ -84,11 +84,6 @@ export const postsController = {
         res.status(404).json({ message: "Пост не знайдено" });
           return;
       }
-      console.log("Хто автор в БД:", post.author, "| Хто видаляє:", requestingUserId);
-      if (post.authorId.toString() !== requestingUserId) {
-          res.status(403).json({ message: "Заборонено! Ви не можете видалити чужий пост." });
-          return;
-      }
       await postsService.delete(postId);
       res.status(204).send();
     } catch (error) {

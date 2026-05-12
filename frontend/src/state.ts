@@ -3,6 +3,7 @@ import type { PostViewDto } from "./dto/posts.dto.js";
 
 export const uiKinds = {
     ok: "ok",
+    empty: "empty",
     loading: "loading",
     error: "error",
 } as const;
