@@ -1,6 +1,7 @@
 {
   "name": "lab-1",
   "version": "1.0.0",
+  "type": "module",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -13,15 +14,16 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
   "bugs": {
     "url": "https://github.com/goncharov2007ivan-a11y/LAB-1/issues"
   },
   "homepage": "https://github.com/goncharov2007ivan-a11y/LAB-1#readme",
   "dependencies": {
-    "http-server": "^14.1.1"
+    "http-server": "^14.1.1",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "concurrently": "^9.2.1"
-  }
+  },
+  "strictNullChecks": true
 }

@@ -10,7 +10,6 @@ export const state = {
     filters: {
         search: "",
         category: "Всі категорії",
-        sortBy: "date",
         sortOrder: "desc",
         page: 1,
         limit: 10

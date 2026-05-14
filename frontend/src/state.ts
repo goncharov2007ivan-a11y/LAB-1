@@ -1,5 +1,5 @@
 
-import type { PostViewDto } from "./dto/posts.dto.js";
+import type { PostViewDto } from "../../shared/dtos/posts.dto";
 
 export const uiKinds = {
     ok: "ok",
@@ -17,21 +17,19 @@ export interface AppState {
     filters: {
         search: string;
         category: string;
-        sortBy: "title" | "category" | "authorName" | "date"; 
         sortOrder: "asc" | "desc";
         page: number;
         limit: number;
     };
     idEditing: string | null;
-    currentUserId: number | null; 
+    currentUserId: string | null; 
 }
 export const state: AppState = {
     items: [],
     ui: { kind: uiKinds.ok, message: "" },
     filters: { 
         search: "", 
-        category: "Всі категорії", 
-        sortBy: "date", 
+        category: "Всі категорії",  
         sortOrder: "desc",
         page: 1,
         limit: 10

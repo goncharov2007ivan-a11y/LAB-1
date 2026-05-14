@@ -1,8 +1,8 @@
 import { postsController } from "../controllers/posts.controller.js";
 import { Router } from "express";
 import { validate } from "../middleware/validate.middleware.js";
-import { CreatePostSchema, UpdatePostSchema } from "../dtos/posts.dto.js";
-import { allowedCategories } from "../dtos/posts.dto.js";
+import { CreatePostSchema, UpdatePostSchema } from "../../../shared/dtos/posts.dto.js";
+import { allowedCategories } from "../../../shared/dtos/posts.dto.js";
 export const postsRouter = Router();
 postsRouter.get("/", postsController.list);
 postsRouter.get("/categories", (req, res) => {

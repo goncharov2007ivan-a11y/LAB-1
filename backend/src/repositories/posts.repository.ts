@@ -1,24 +1,37 @@
-import type { Post } from "../dtos/posts.dto.js";
+import type { Post } from "../../../shared/dtos/posts.dto.js";
+import {z} from "zod";
 import { all, get, run, escapeSqlString } from "../db/dbClient.js";
 
 interface CreatePostData {
   title: string;
   category: string;
   content: string;
-  authorId: number;
+  authorId: string;
   date: string;
 }
 
-function mapToPost(row: any): Post {
+const DbPostRowSchema = z.object({
+  id: z.coerce.string(),
+  title: z.string(),
+  category: z.string(),
+  content: z.string(),
+  authorName: z.string(),
+  authorId: z.coerce.string(),
+  date: z.string(),
+  isDeleted: z.number().int().min(0).max(1)
+});
+
+function mapToPost(row: unknown): Post {
+  const parcedRow = DbPostRowSchema.parse(row);
   return {
-    id: String(row.id),
-    title: row.title,
-    category: row.category,
-    content: row.content,
-    author: row.authorName,
-    authorId: row.authorId,
-    date: row.date,
-    isDeleted: row.isDeleted === 1,
+    id: parcedRow.id,
+    title: parcedRow.title,
+    category: parcedRow.category,
+    content: parcedRow.content,
+    author: parcedRow.authorName,
+    authorId: parcedRow.authorId,
+    date: parcedRow.date,
+    isDeleted: parcedRow.isDeleted === 1,
   };
 }
 
@@ -30,7 +43,7 @@ export const postsRepository = {
     JOIN Users u ON p.authorId = u.id
     WHERE p.isDeleted = 0  
     ORDER BY p.id DESC;`;
-    const rows = await all<any>(sql);
+    const rows = await all(sql);
     return rows.map(mapToPost);
   },
 
@@ -43,7 +56,7 @@ export const postsRepository = {
       WHERE p.authorId = ${uId} AND p.isDeleted = 0
       ORDER BY p.id DESC;
     `;
-    const rows = await all<any>(sql);
+    const rows = await all(sql);
     return rows.map(mapToPost);
   },
 
@@ -55,7 +68,7 @@ export const postsRepository = {
       JOIN Users u ON p.authorId = u.id 
       WHERE p.id = ${postId} AND p.isDeleted = 0; 
     `;
-    const row = await get<any>(sql);
+    const row = await get(sql);
     return row ? mapToPost(row) : undefined;
   },
 
@@ -72,12 +85,12 @@ export const postsRepository = {
     const result = await run(sql);
 
     const createdPost = `
-    SELECT p.id, p.title, p.category, p.content, p.date, p.isDeleted, u.name as authorName 
+    SELECT p.id, p.title, p.category, p.content, p.date, p.isDeleted, p.authorId, u.name as authorName 
     FROM Posts p 
     JOIN Users u ON p.authorId = u.id
     WHERE p.id = ${result.lastID};
     `;
-    const row = await get<any>(createdPost);
+    const row = await get(createdPost);
     return mapToPost(row);
   },
 
@@ -115,7 +128,7 @@ export const postsRepository = {
     offset: number;
     category?: string;
     search?: string;
-    dateSort?: string;
+    sort?: string;
   }): Promise<{ items: Post[]; total: number }> => {
     let whereInj = "WHERE p.isDeleted = 0";
 
@@ -129,9 +142,9 @@ export const postsRepository = {
     }
 
     let orderClause = "ORDER BY p.id DESC";
-    if (options.dateSort) {
+    if (options.sort) {
       orderClause =
-        options.dateSort === "asc"
+        options.sort === "asc"
           ? "ORDER BY p.date ASC"
           : "ORDER BY p.date DESC";
     }
@@ -148,7 +161,7 @@ export const postsRepository = {
       ${orderClause}
       LIMIT ${options.limit} OFFSET ${options.offset};
     `;
-    const rows = await all<any>(sql);
+    const rows = await all(sql);
 
     return { items: rows.map(mapToPost), total };
   },

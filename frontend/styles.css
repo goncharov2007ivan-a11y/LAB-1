@@ -59,3 +59,49 @@ body {
 .view-section[hidden] {
     display: none !important;
 }
+.input-error {
+    border: 2px solid #e74c3c !important; 
+    background-color: #fceceb; 
+}
+.error-text {
+    color: #e74c3c;
+    font-size: 12px;
+    margin-top: 5px;
+    display: none; 
+}
+.error-text.show {
+    display: block;
+}
+/* Стилі для спливаючих повідомлень (showNotice) */
+.notice-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 25px;
+    border-radius: 5px;
+    color: white;
+    font-weight: bold;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+    z-index: 1000;
+}
+
+.notice-container.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.notice-container.success {
+    background-color: #2ecc71; /* Зелений */
+    box-shadow: 0 4px 6px rgba(46, 204, 113, 0.3);
+}
+
+.notice-container.error {
+    background-color: #e74c3c; /* Червоний */
+    box-shadow: 0 4px 6px rgba(231, 76, 60, 0.3);
+}
+#sort-date-th {
+    cursor: pointer;
+    user-select: none;
+}

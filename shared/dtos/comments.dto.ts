@@ -1,5 +1,24 @@
 import { z } from "zod";
 
+export interface Comment {
+  id: string;
+  text: string;
+  authorName: string; 
+  authorId: string;
+  postId: string;
+  date: string;
+  isDeleted: boolean;
+}
+
+export interface CommentViewDto {
+  id: string;
+  text: string;
+  author: string;
+  authorId: string; 
+  postId: string;
+  date: string;
+}
+
 export const CreateCommentSchema = z.object({
   body: z.object({
     text: z
@@ -7,11 +26,9 @@ export const CreateCommentSchema = z.object({
       .min(1, "Мінімум 1 символ")
       .max(300, "Максимум 300 символів"),
     authorId: z
-      .number({ message: "ID автора обов'язковий" })
-      .positive("ID має бути додатнім"),
+      .string({ message: "ID автора повинен бути рядком" }),
     postId: z
-      .number({ message: "ID поста обов'язковий" })
-      .positive("ID має бути додатнім"),
+      .string({ message: "ID поста повинен бути рядком" }),
   }),
 });
 
@@ -24,10 +41,4 @@ export const UpdateCommentSchema = z.object({
 export type CreateCommentDto = z.infer<typeof CreateCommentSchema>["body"];
 export type UpdateCommentDto = z.infer<typeof UpdateCommentSchema>["body"];
 
-export interface CommentViewDto {
-  id: string;
-  text: string;
-  author: string;
-  postId: string;
-  date: string;
-}
+

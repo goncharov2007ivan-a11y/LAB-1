@@ -12,5 +12,9 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs"
+  "type": "commonjs",
+  "strictNullChecks": true,
+  "dependencies": {
+    "zod": "^4.4.3"
+  }
 }

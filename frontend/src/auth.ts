@@ -17,7 +17,7 @@ export async function handleAuth() {
     if (!email) return;
 
     try {
-        const users = await api.getUsers();
+        const users = await api.getUsers() || [];
         const user = users.find((u:any) => u.email === email);
 
         if (!user) {
@@ -54,7 +54,7 @@ export function updateAuthUI() {
 export function initAuth() {
     const savedId = localStorage.getItem('currentUserId');
     if (savedId) {
-        state.currentUserId = Number(savedId);
+        state.currentUserId = savedId;
     }
     updateAuthUI();
 }

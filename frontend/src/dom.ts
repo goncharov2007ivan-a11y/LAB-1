@@ -16,3 +16,11 @@ export const userGreeting = document.getElementById('user-greeting') as HTMLSpan
 export const userNameDisplay = document.getElementById('user-name-display') as HTMLElement;
 
 export const sidebar = document.querySelector('.sidebar') as HTMLDivElement;
+
+export const titleInput = document.querySelector('#title') as HTMLInputElement;
+export const categoryInput = document.querySelector('#category') as HTMLSelectElement;
+export const contentInput = document.querySelector('#content') as HTMLTextAreaElement;
+
+export const titleError = document.getElementById('titleError') as HTMLDivElement;
+export const categoryError = document.getElementById('categoryError') as HTMLDivElement;
+export const contentError = document.getElementById('contentError') as HTMLDivElement;

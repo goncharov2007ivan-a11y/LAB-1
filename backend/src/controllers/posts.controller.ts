@@ -17,14 +17,14 @@ export const postsController = {
 
       const category = req.query.category as string;
       const search = req.query.search as string;
-      const dateSort = req.query.dateSort as string;
+      const sort = req.query.sort === 'asc' ? 'asc' : 'desc';
 
       const result = await postsService.list({
         limit,
         offset,
         category,
         search,
-        dateSort,
+        sort,
       });
       res.status(200).json(result);
     } catch (error) {

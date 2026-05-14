@@ -10,10 +10,16 @@ export async function loadPostDetails(postId) {
             </div>
         `;
         const post = await api.getPost(postId);
+        const currentUserId = localStorage.getItem('currentUserId');
+        const isMyPost = currentUserId && String(currentUserId) === String(post.authorId);
         viewPost.innerHTML = `
             <div class="toolbar">
             <h2>Деталі оголошення</h2>
                 <button type="button" id="back-from-detail-btn" class="btn outline">Назад</button>
+                ${isMyPost ? `
+                        <button type="button" id="edit-post-btn" data-post-id="${post.id}" class="btn outline">Редагувати</button>
+                        <button type="button" id="delete-post-btn" data-post-id="${post.id}" class="btn delete">Видалити</button>
+                ` : ''}
             </div>
 
             <div class="panel">
@@ -46,6 +52,7 @@ export async function loadPostDetails(postId) {
                 </div>
             </div>
         `;
+        await loadComments(postId);
     }
     catch (error) {
         console.error(error);
@@ -67,24 +74,30 @@ export async function loadComments(postId) {
         return;
     }
     try {
-        console.log("Завантажуємо коментарі для ID:", postId);
         const comments = await api.getComments(postId);
-        console.log("Отримано коментарів:", comments);
+        const currentUserId = String(localStorage.getItem('currentUserId'));
         if (!comments || comments.length === 0) {
             commentsList.innerHTML = '<p class="empty-msg">Поки немає коментарів.</p>';
             return;
         }
-        commentsList.innerHTML = comments.map((c) => `
+        commentsList.innerHTML = comments.map((c) => {
+            const isMyComment = currentUserId && String(currentUserId) === String(c.authorId);
+            return `
             <div class="comment-item">
                 <div class="comment-header">
                     <strong class="comment-author">${c.author}</strong> 
                     <span class="comment-date">${new Date(c.date).toLocaleString('uk-UA')}</span>
+                    ${isMyComment ? `
+                            <button type="button" class="btn outline edit-comment-btn" data-comment-id="${c.id}" data-current-text="${c.text}">Редагувати</button>
+                            <button type="button" class="btn outline delete-comment-btn" data-comment-id="${c.id}">Видалити</button>
+                    ` : ''}
                 </div>
                 <div class="comment-body">
                     ${c.text}
                 </div>
             </div>
-        `).join('');
+            `;
+        }).join('');
     }
     catch (error) {
         console.error(error);

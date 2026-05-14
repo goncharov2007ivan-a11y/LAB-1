@@ -3,13 +3,15 @@ import type {
   CreateCommentDto,
   UpdateCommentDto,
   CommentViewDto,
-} from "../dtos/comments.dto.js";
+  Comment,
+} from "../../../shared/dtos/comments.dto.js";
 
-function toCommentViewDto(comment: any): CommentViewDto {
+function toCommentViewDto(comment: Comment): CommentViewDto {
   return {
     id: String(comment.id),
     text: comment.text,
     author: comment.authorName,
+    authorId: String(comment.authorId),
     postId: String(comment.postId),
     date: comment.date,
   };

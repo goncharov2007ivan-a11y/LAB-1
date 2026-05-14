@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Дошка оголошень</title>
     <link rel="stylesheet" href="styles.css">
-    <script type="module" src="./dist/main.js" defer></script>
+    <script type="module" src="./frontend/src/main.js" defer></script>
 </head>
 <body>
     <header class="app-header">
@@ -48,11 +48,13 @@
                     <table id="posts-table">
                         <thead>
                             <tr>
-                                <th class="sortable" data-field="title">Заголовок</th>
-                                <th class="sortable" data-field="category">Категорія</th>
+                                <th>Заголовок</th>
+                                <th>Категорія</th>
                                 <th>Текст</th>
-                                <th class="sortable" data-field="authorName">Автор</th>
-                                <th class="sortable" data-field="date">Дата</th>
+                                <th>Автор</th>
+                                <th id="sort-date-th">
+                                    Дата <span id="sort-arrow">▼</span>
+                                </th>
                                 <th>Дії</th>
                             </tr>
                         </thead>
@@ -71,12 +73,13 @@
     <form id="create-post-form" class="panel">
         <div class="field">
             <label for="title">Заголовок</label>
-            <input type="text" id="title" name="title" required maxlength="70" placeholder="Що продаємо/шукаємо?">
+            <input type="text" id="title" name="title" maxlength="70" placeholder="Що продаємо/шукаємо?">
+            <div id="titleError" class="error-text"></div> 
         </div>
 
         <div class="field">
             <label for="category">Категорія</label>
-            <select id="category" name="category" required>
+            <select id="category" name="category">
                 <option value="" disabled selected>Оберіть категорію...</option>
                 <option value="Новини">Новини</option>
                 <option value="Події">Події</option>
@@ -85,11 +88,13 @@
                 <option value="Спорт">Спорт</option>
                 <option value="Меми">Меми</option>
             </select>
+            <div id="categoryError" class="error-text"></div>
         </div>
 
         <div class="field">
             <label for="content">Текст оголошення</label>
             <textarea id="content" name="content" rows="4" maxlength="500" placeholder="Опишіть деталі..."></textarea>
+            <div id="contentError" class="error-text"></div>
         </div>
 
         <div class="form-actions">

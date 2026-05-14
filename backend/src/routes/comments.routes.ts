@@ -4,7 +4,7 @@ import { validate } from "../middleware/validate.middleware.js";
 import {
   CreateCommentSchema,
   UpdateCommentSchema,
-} from "../dtos/comments.dto.js";
+} from "../../../shared/dtos/comments.dto.js";
 
 export const commentsRouter = Router();
 

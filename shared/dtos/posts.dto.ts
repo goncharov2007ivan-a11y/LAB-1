@@ -5,7 +5,7 @@ export interface Post {
   category: string;
   content: string;
   author: string;
-  authorId: number;
+  authorId: string;
   date: string;
   isDeleted: boolean;
 }
@@ -30,8 +30,7 @@ export const CreatePostSchema = z.object({
       .string({ message: "Текст поста обов'язковий" })
       .max(500, "Текст не більше 500 символів"),
     authorId: z
-      .number({ message: "ID автора обов'язковий" })
-      .positive("ID має бути додатнім"),
+      .string({ message: "ID автора має бути рядком" }),
   }),
 });
 
@@ -46,7 +45,7 @@ export interface PostViewDto {
   category: string;
   content: string;
   author: string;
-  authorId: number;
+  authorId: string;
   date: string;
 }
 export interface ListResponse<T> {

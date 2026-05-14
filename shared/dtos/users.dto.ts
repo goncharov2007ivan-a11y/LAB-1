@@ -1,5 +1,20 @@
 import { z } from "zod";
 
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  date: string;
+  isDeleted: boolean;
+}
+
+export interface UserViewDto {
+  id: string;
+  name: string;
+  email: string;
+  date: string;
+}
+
 export const CreateUserSchema = z.object({
   body: z.object({
     name: z
@@ -18,9 +33,4 @@ export const UpdateUserSchema = z.object({
 export type CreateUserDto = z.infer<typeof CreateUserSchema>["body"];
 export type UpdateUserDto = z.infer<typeof UpdateUserSchema>["body"];
 
-export interface UserViewDto {
-  id: string;
-  name: string;
-  email: string;
-  date: string;
-}
+

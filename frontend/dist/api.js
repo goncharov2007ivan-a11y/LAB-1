@@ -1,118 +1,122 @@
 const BASE_URL = 'http://localhost:3000/api/v1';
-export const api = {
-    getUsers: async () => {
-        const response = await fetch(`${BASE_URL}/users`);
-        if (!response.ok)
-            throw new Error("Помилка сервера");
-        return response.json();
-    },
-    getPosts: async (category, search, page = 1, limit = 10) => {
-        let url = `${BASE_URL}/posts`;
-        const params = [];
-        if (category) {
-            params.push("category=" + encodeURIComponent(category));
+async function request(path, options = {}) {
+    const url = `${BASE_URL}${path}`;
+    const userId = localStorage.getItem('currentUserId') || '';
+    const headers = new Headers(options.headers || {});
+    if (!headers.has('Content-Type') && options.method !== 'GET' && options.method !== 'DELETE') {
+        headers.set('Content-Type', 'application/json');
+    }
+    if (userId) {
+        headers.set('User-Id', userId);
+    }
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
+    let response;
+    try {
+        response = await fetch(url, { ...options, headers, signal: controller.signal });
+        clearTimeout(timeout);
+    }
+    catch (e) {
+        if (e.name === "AbortError") {
+            throw new Error("Перевищено час очікування. Сервер не відповідає");
         }
-        if (search) {
-            params.push("search=" + encodeURIComponent(search));
-        }
-        const offset = (page - 1) * limit;
-        params.push("offset=" + offset);
-        params.push("limit=" + limit);
-        if (params.length > 0) {
-            url += "?" + params.join("&");
-        }
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 5000);
-        let response;
+        throw new Error("Помилка мережі або CORS: " + e.message);
+    }
+    if (response.status === 204) {
+        return null;
+    }
+    const rawText = await response.text();
+    if (!response.ok) {
+        let errorData;
         try {
-            response = await fetch(url, { signal: controller.signal });
-            clearTimeout(timeout);
+            errorData = JSON.parse(rawText);
         }
-        catch (error) {
-            if (error.name === "AbortError") {
-                throw new Error("Перевищено час очікування. Сервер не відповідає");
-            }
-            throw new Error("Сервер наївся і спить. Перевірте з'єднання або спробуйте пізніше.");
+        catch {
+            errorData = null;
         }
-        if (!response.ok)
-            throw new Error("Помилка сервера: не вдалося завантажити оголошення");
-        const result = await response.json();
-        return result.items;
-    },
-    createPost: async (postData) => {
-        const url = 'http://localhost:3000/api/v1/posts';
-        const userId = localStorage.getItem('currentUserId') || '';
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json',
-                'user-id': userId
-            },
-            body: JSON.stringify(postData)
-        });
-        if (!response.ok)
-            throw new Error("Помилка створення поста");
-        return response.json();
-    },
-    deletePost: async (postId) => {
-        const url = `http://localhost:3000/api/v1/posts/${postId}`;
-        const userId = localStorage.getItem('currentUserId') || '';
-        const response = await fetch(url, {
-            method: 'DELETE',
-            headers: {
-                'User-id': userId,
-                'Content-Type': 'application/json'
-            }
-        });
-        if (response.status === 403) {
-            throw new Error("У вас немає прав для видалення цього поста.");
-        }
-        if (!response.ok) {
-            throw new Error("Помилка при видаленні поста");
-        }
-        return true;
+        if (response.status === 403)
+            throw new Error("Немає прав для цієї дії");
+        const errorMessage = errorData?.message || errorData?.title || `Помилка сервера: ${response.status}`;
+        throw new Error(errorMessage);
+    }
+    if (!rawText)
+        return null;
+    try {
+        return JSON.parse(rawText);
+    }
+    catch {
+        return rawText;
+    }
+}
+export const api = {
+    getPosts: async (category, search, page = 1, limit = 10, sort = 'desc') => {
+        const params = new URLSearchParams();
+        if (category)
+            params.append("category", category);
+        if (search)
+            params.append("search", search);
+        params.append("offset", String((page - 1) * limit));
+        params.append("limit", String(limit));
+        params.append("sort", sort);
+        const url = `/posts?${params.toString()}`;
+        const data = await request(url);
+        return data.items;
     },
     getPost: async (postId) => {
-        const url = `http://localhost:3000/api/v1/posts/${postId}`;
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error("Не вдалося завантажити деталі поста");
-        }
-        return await response.json();
+        return await request(`/posts/${postId}`);
+    },
+    createPost: async (postData) => {
+        return await request(`/posts`, {
+            method: 'POST',
+            body: JSON.stringify(postData)
+        });
+    },
+    updatePost: async (postId, postData) => {
+        return await request(`/posts/${postId}`, {
+            method: 'PATCH',
+            body: JSON.stringify(postData)
+        });
+    },
+    deletePost: async (postId) => {
+        return await request(`/posts/${postId}`, { method: 'DELETE' });
     },
     getComments: async (postId) => {
-        const url = `http://localhost:3000/api/v1/comments/post/${postId}`;
-        try {
-            const response = await fetch(url);
-            if (!response.ok) {
-                throw new Error(`Помилка: ${response.status}`);
-            }
-            const data = await response.json();
-            return data;
-        }
-        catch (error) {
-            throw error;
-        }
+        return await request(`/comments/post/${postId}`);
     },
     createComment: async (postId, content) => {
-        const url = `http://localhost:3000/api/v1/comments`;
         const userId = localStorage.getItem('currentUserId');
         if (!userId)
             throw new Error("Ви повинні увійти, щоб залишити коментар");
-        const castForBackend = {
-            postId: Number(postId),
-            authorId: Number(userId),
-            text: content
-        };
-        const response = await fetch(url, {
+        return await request(`/comments`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'User-Id': userId
-            },
-            body: JSON.stringify(castForBackend)
+            body: JSON.stringify({ postId: postId, authorId: userId, text: content })
         });
-        if (!response.ok)
-            throw new Error("Помилка створення коментаря");
-        return await response.json();
+    },
+    updateComment: async (commentId, text) => {
+        return await request(`/comments/${commentId}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ text })
+        });
+    },
+    deleteComment: async (commentId) => {
+        return await request(`/comments/${commentId}`, { method: 'DELETE' });
+    },
+    getUsers: async () => {
+        return await request('/users', { method: 'GET' });
+    },
+    getUserById: async (userId) => {
+        return await request(`/users/${userId}`, { method: 'GET' });
+    },
+    createUser: async (userData) => {
+        return await request('/users', {
+            method: 'POST',
+            body: JSON.stringify(userData)
+        });
+    },
+    updateUser: async (userId, userData) => {
+        return await request(`/users/${userId}`, {
+            method: 'PATCH',
+            body: JSON.stringify(userData)
+        });
     },
 };

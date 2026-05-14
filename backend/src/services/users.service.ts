@@ -3,7 +3,7 @@ import type {
   CreateUserDto,
   UpdateUserDto,
   UserViewDto,
-} from "../dtos/users.dto.js";
+} from "../../../shared/dtos/users.dto.js";
 
 function toUserViewDto(user: any): UserViewDto {
   return {

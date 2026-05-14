@@ -1,6 +1,6 @@
 import { api } from "../api.js";
 import { postsBody } from '../dom.js';
-import { PostViewDto } from "../dto/posts.dto.js";
+import { PostViewDto } from "../../../shared/dtos/posts.dto.js";
 import { state, uiKinds } from '../state.js'; 
 
 function renderPosts() {
@@ -49,11 +49,9 @@ function renderPosts() {
         dateTd.innerHTML = new Date(post.date).toLocaleDateString('uk-UA');
 
         const actionsTd = document.createElement('td');
-        const isMyPost = post.authorId === state.currentUserId; 
 
         actionsTd.innerHTML = `
             <button type="button" class="btn outline small" data-view-id="${post.id}">Деталі</button>
-            ${isMyPost ? `<button type="button" class="btn delete small" data-delete-id="${post.id}">Видалити</button>` : ''}
         `;
 
         tr.append(titleTd, categoryTd, contentTd, authorTd, dateTd, actionsTd);
@@ -71,7 +69,8 @@ export async function loadPosts() {
             categoryToSend,
             state.filters.search,
             state.filters.page,
-            state.filters.limit
+            state.filters.limit,
+            state.filters.sortOrder
         );
 
         if (!posts || posts.length === 0) {
@@ -85,10 +84,14 @@ export async function loadPosts() {
         
         renderPosts();
 
-    } catch (error: any) {
+    } catch (error) {
         console.error(error);
         state.ui.kind = uiKinds.error;
-        state.ui.message = error.message || 'Не вдалося завантажити дані з сервера';
+        if (error instanceof Error) {
+            state.ui.message = error.message; 
+        } else {
+            state.ui.message = 'Не вдалося завантажити дані з сервера';
+        }
         renderPosts();
     }
 }

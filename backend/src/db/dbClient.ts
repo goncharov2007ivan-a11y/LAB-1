@@ -6,12 +6,12 @@ export function escapeSqlString(s: string | null | undefined): string {
   return String(s).replace(/'/g, "''");
 }
 
-export function all<T = any>(sql: string): Promise<T[]> {
+export function all<T>(sql: string): Promise<T[]> {
   return new Promise((resolve, reject) => {
     db.all(sql, (err, rows) => (err ? reject(err) : resolve(rows as T[])));
   });
 }
-export function get<T = any>(sql: string): Promise<T | undefined> {
+export function get<T>(sql: string): Promise<T | undefined> {
   return new Promise((resolve, reject) => {
     db.get(sql, (err, row) => (err ? reject(err) : resolve(row as T)));
   });

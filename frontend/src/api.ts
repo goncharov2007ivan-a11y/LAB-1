@@ -1,131 +1,138 @@
-import { CreatePostDto } from "./dto/posts.dto";
+
+import { CreatePostDto, UpdatePostDto } from "../../shared/dtos/posts.dto";
+import { CreateUserDto, UserViewDto, UpdateUserDto } from "../../shared/dtos/users.dto";
 
 const BASE_URL = 'http://localhost:3000/api/v1';
-export const api = {
-    getUsers: async () => {
-        const response = await fetch(`${BASE_URL}/users`);
-        if (!response.ok) throw new Error("Помилка сервера");
-        return response.json();
-    },
-    getPosts: async (category?: string, search?: string, page: number = 1, limit: number = 10) => {
-        let url = `${BASE_URL}/posts`;
 
-        const params: string[] = [];
-        if (category) {
-            params.push("category=" + encodeURIComponent(category));
-        }
-        if (search) {
-            params.push("search=" + encodeURIComponent(search));
-        }
+async function request<T>(path: string, options: RequestInit = {}): Promise<T | null> {
+    const url = `${BASE_URL}${path}`;
+    const userId = localStorage.getItem('currentUserId') || '';
 
-        const offset = (page - 1) * limit;
-        params.push("offset=" + offset);
-        params.push("limit=" + limit);
+    const headers = new Headers(options.headers || {});
+    if (!headers.has('Content-Type') && options.method !== 'GET' && options.method !== 'DELETE') {
+        headers.set('Content-Type', 'application/json');
+    }
+    if (userId) {
+        headers.set('User-Id', userId);
+    }
 
-        if (params.length > 0) {
-            url += "?" + params.join("&");
-        }
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 5000);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
 
-        let response;
-        try {
-            response = await fetch(url, { signal: controller.signal });
-            clearTimeout(timeout);
-        } catch (error: any) {
-            if (error.name === "AbortError") {
-                throw new Error("Перевищено час очікування. Сервер не відповідає");
-            }
-            throw new Error("Сервер наївся і спить. Перевірте з'єднання або спробуйте пізніше.");
+    let response: Response;
+    try {
+        response = await fetch(url, { ...options, headers, signal: controller.signal });
+        clearTimeout(timeout);
+    } catch (e: any) {
+        if (e.name === "AbortError") {
+            throw new Error("Перевищено час очікування. Сервер не відповідає");
         }
-        if (!response.ok) throw new Error("Помилка сервера: не вдалося завантажити оголошення");
+        throw new Error("Помилка мережі або CORS: " + e.message);
+    }
+
+    if (response.status === 204) {
+        return null as T;
+    }
+
+    const rawText = await response.text();
+
+    if (!response.ok) {
+        let errorData;
+        try { errorData = JSON.parse(rawText); } 
+        catch { errorData = null; }
         
-        const result = await response.json();
-        return result.items;
-    },
-    createPost: async (postData: CreatePostDto) => {
-        const url = 'http://localhost:3000/api/v1/posts';
-        const userId = localStorage.getItem('currentUserId') || '';
+        if (response.status === 403) throw new Error("Немає прав для цієї дії");
+        
+        const errorMessage = errorData?.message || errorData?.title || `Помилка сервера: ${response.status}`;
+        throw new Error(errorMessage);
+    }
 
-        const response = await fetch(url, {
+    if (!rawText) return null;
+    try {
+        return JSON.parse(rawText);
+    } catch {
+        return rawText as T;
+    }
+}
+
+export const api = {
+    getPosts: async (category?: string, search?: string, page: number = 1, limit: number = 10, sort: string = 'desc') => {
+        const params = new URLSearchParams();
+        if (category) params.append("category", category);
+        if (search) params.append("search", search);
+        params.append("offset", String((page - 1) * limit));
+        params.append("limit", String(limit));
+        params.append("sort", sort);
+
+        const url = `/posts?${params.toString()}`;
+        const data = await request<any>(url);
+        return data.items; 
+    },
+    
+    getPost: async (postId: string) => {
+        return await request<any>(`/posts/${postId}`);
+    },
+
+    createPost: async (postData: CreatePostDto) => {
+        return await request<any>(`/posts`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json',
-                'user-id': userId
-            },
             body: JSON.stringify(postData)
         });
-        if (!response.ok) throw new Error("Помилка створення поста");
-        return response.json();
     },
-    deletePost: async (postId: string) => {
-        const url = `http://localhost:3000/api/v1/posts/${postId}`;
 
-        const userId = localStorage.getItem('currentUserId') || '';
-        const response = await fetch(url, {
-            method: 'DELETE',
-            headers: {
-                'User-id': userId, 
-                'Content-Type': 'application/json'
-            }
+    updatePost: async (postId: string, postData: UpdatePostDto) => {
+        return await request<any>(`/posts/${postId}`, {
+            method: 'PATCH',
+            body: JSON.stringify(postData)
         });
-        
-        if (response.status === 403) {
-            throw new Error("У вас немає прав для видалення цього поста.");
-        }
-        
-        if (!response.ok) {
-            throw new Error("Помилка при видаленні поста");
-        }
-        
-        return true; 
     },
-    getPost: async (postId: string) => {
-        const url = `http://localhost:3000/api/v1/posts/${postId}`;
 
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error("Не вдалося завантажити деталі поста");
-        }
-        return await response.json();
+    deletePost: async (postId: string) => {
+        return await request<boolean>(`/posts/${postId}`, { method: 'DELETE' });
     },
+
     getComments: async (postId: string) => {
-        const url = `http://localhost:3000/api/v1/comments/post/${postId}`;
-        
-        try {
-            const response = await fetch(url);
-            
-            if (!response.ok) {
-                throw new Error(`Помилка: ${response.status}`);
-            }
-            
-            const data = await response.json();
-            
-            return data;
-        } catch (error) {
-            throw error;
-        }
+        return await request<any>(`/comments/post/${postId}`);
     },
+
     createComment: async (postId: string, content: string) => {
-        const url = `http://localhost:3000/api/v1/comments`;
         const userId = localStorage.getItem('currentUserId'); 
         if (!userId) throw new Error("Ви повинні увійти, щоб залишити коментар");
 
-        const castForBackend = {
-            postId: Number(postId),
-            authorId: Number(userId),
-            text: content
-        }
-
-        const response = await fetch(url, {
+        return await request<any>(`/comments`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'User-Id': userId 
-            },
-            body: JSON.stringify(castForBackend) 
+            body: JSON.stringify({ postId: postId, authorId: userId, text: content })
         });
-        
-        if (!response.ok) throw new Error("Помилка створення коментаря");
-        return await response.json();
     },
-}
+
+    updateComment: async (commentId: string, text: string) => {
+        return await request<any>(`/comments/${commentId}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ text })
+        });
+    },
+
+    deleteComment: async (commentId: string) => {
+        return await request<boolean>(`/comments/${commentId}`, { method: 'DELETE' });
+    },
+    getUsers: async () => {
+        return await request<UserViewDto[]>('/users', { method: 'GET' });
+    },
+
+    getUserById: async (userId: string) => {
+        return await request<UserViewDto>(`/users/${userId}`, { method: 'GET' });
+    },
+
+    createUser: async (userData: CreateUserDto) => {
+        return await request<UserViewDto>('/users', {
+            method: 'POST',
+            body: JSON.stringify(userData)
+        });
+    },
+    updateUser: async (userId: string, userData: UpdateUserDto) => {
+        return await request<UserViewDto>(`/users/${userId}`, {
+            method: 'PATCH',
+            body: JSON.stringify(userData)
+        });
+    },
+};

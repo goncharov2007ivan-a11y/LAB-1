@@ -5,14 +5,14 @@ import type {
   PostViewDto,
   ListResponse,
   Post,
-} from "../dtos/posts.dto.js";
+} from "../../../shared/dtos/posts.dto.js";
 
 export interface ListPostOptions {
   limit: number;
   offset: number;
   category?: string;
   search?: string;
-  dateSort?: string;
+  sort?: string;
 }
 function toPostViewDto(post: Post): PostViewDto {
   return {
