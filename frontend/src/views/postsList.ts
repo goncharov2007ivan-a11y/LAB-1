@@ -33,6 +33,8 @@ function renderPosts() {
     state.items.forEach((post: PostViewDto) => {
         const tr = document.createElement('tr');
 
+        tr.dataset.viewId = post.id;
+
         const titleTd = document.createElement('td');
         titleTd.innerHTML = post.title;
 
@@ -48,13 +50,8 @@ function renderPosts() {
         const dateTd = document.createElement('td');
         dateTd.innerHTML = new Date(post.date).toLocaleDateString('uk-UA');
 
-        const actionsTd = document.createElement('td');
 
-        actionsTd.innerHTML = `
-            <button type="button" class="btn outline small" data-view-id="${post.id}">Деталі</button>
-        `;
-
-        tr.append(titleTd, categoryTd, contentTd, authorTd, dateTd, actionsTd);
+        tr.append(titleTd, categoryTd, contentTd, authorTd, dateTd);
         postsBody.appendChild(tr);
     });
 }
@@ -76,6 +73,7 @@ export async function loadPosts() {
         if (!posts || posts.length === 0) {
             state.ui.kind = uiKinds.empty;
             state.items = []; 
+            renderPagination(0);
         } else {
             state.ui.kind = uiKinds.ok;
             state.items = posts;

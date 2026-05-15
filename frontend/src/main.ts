@@ -6,7 +6,8 @@ import { state } from './state.js';
 import { authBtn, backToListBtn, categoryList, createPostBtn, createPostForm, searchInput } from './dom.js';
 import { api } from './api.js';
 import { loadComments, loadPostDetails } from './views/postDetail.js';
-import { showNotice } from './ui.js';
+import { clearError, showError, showNotice } from './ui.js';
+import { closeUserModal, handleUserRegistration, openUserModal } from './views/userModal.js';
 
 showView('List');
 initAuth();
@@ -35,6 +36,21 @@ searchInput?.addEventListener('input', async (event) => {
 });
 document.addEventListener('click', async (event) => {
     const target = event.target as HTMLElement;
+
+    if (target.closest('#auth-btn')) return openUserModal();
+
+    if (target.closest('#close-user-modal-btn') || target.classList.contains('modal-overlay')) {
+        return closeUserModal();
+    }
+
+    if (target.closest('#logout-btn')) {
+        localStorage.removeItem('currentUserId');
+        localStorage.removeItem('currentUserName');
+        state.currentUserId = null;
+        
+        window.location.reload(); 
+        return;
+    }
     
     if (target.closest('#create-post-btn')) {
         resetPostFormToCreate();
@@ -47,10 +63,6 @@ document.addEventListener('click', async (event) => {
         return;
     }
 
-    if (target.closest('#auth-btn')) {
-        handleAuth();
-        return;
-    }
 
     const deletePostBtn = target.closest('#delete-post-btn') as HTMLElement;
     if (deletePostBtn) {
@@ -86,6 +98,7 @@ document.addEventListener('click', async (event) => {
         if (confirm('Ви дійсно хочете видалити цей коментар?')) {
             try {
                 await api.deleteComment(commentId);
+                showNotice("Коментар видалено!");
                 await loadComments(postIdInput.value);
             } catch (error) {
                 showNotice("Не вдалося видалити коментар", true);
@@ -142,6 +155,9 @@ document.addEventListener('click', async (event) => {
 document.addEventListener('submit', async (event) => {
     event.preventDefault(); 
     const target = event.target as HTMLFormElement;
+
+    if (target.id === 'create-user-form') return handleUserRegistration();
+
     if (target.id === 'create-post-form') {
         handleCreatePostSubmit(target);
         return;
@@ -150,23 +166,40 @@ document.addEventListener('submit', async (event) => {
         const postIdInput = target.querySelector('#comment-post-id') as HTMLInputElement;
         const textInput = target.querySelector('#comment-text') as HTMLTextAreaElement;
         const submitBtn = target.querySelector('button[type="submit"]') as HTMLButtonElement;
+        const errorDiv = target.querySelector('#commentError') as HTMLDivElement;
 
-        const postId = postIdInput?.value;
-        const text = textInput?.value.trim();
+        const postId = postIdInput?.value || '';
+        const text = textInput?.value.trim() || '';
         const editCommentId = target.dataset.editCommentId;
 
-        if (!postId || !text) return;
+        let isValid = true;
+
+        if (textInput && errorDiv) {
+        clearError(textInput, errorDiv);
+
+        if (!text) {
+            showError(textInput, errorDiv, 'Текст коментаря не може бути порожнім.');
+            isValid = false;
+        } else if (text.length < 3) {
+            showError(textInput, errorDiv, 'Коментар має містити мінімум 3 символи.');
+            isValid = false;
+        }
+    }
+
+        if (!postId || !isValid) return;
 
         try {
             submitBtn.disabled = true;
 
             if (editCommentId) {
                 submitBtn.textContent = 'Збереження...';
-                await api.updateComment(editCommentId, text);
+                await api.updateComment(editCommentId, text as string);
+                showNotice("Коментар успішно оновлено!");
                 delete target.dataset.editCommentId; 
             } else {
                 submitBtn.textContent = 'Відправка...';
-                await api.createComment(postId, text);
+                await api.createComment(postId, text as string);
+                showNotice("Коментар успішно додано!");
             }
             
             textInput.value = '';
@@ -175,12 +208,14 @@ document.addEventListener('submit', async (event) => {
 
         } catch (error) {
             console.error(error);
-            showNotice("Не вдалося додати коментар", true);
+            const errorMsg = error instanceof Error ? error.message : "Не вдалося додати коментар";
+            showNotice(errorMsg, true);
         } finally {
             submitBtn.disabled = false;
             submitBtn.textContent = editCommentId ? 'Зберегти коментар' : 'Відправити коментар';
         }
     }
+
 });
 
 console.log("Додаток ініціалізовано! Чекаємо на події...");

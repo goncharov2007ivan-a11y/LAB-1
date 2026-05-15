@@ -5,15 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Дошка оголошень</title>
     <link rel="stylesheet" href="styles.css">
-    <script type="module" src="./frontend/src/main.js" defer></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "zod": "https://esm.run/zod"
+        }
+      }
+    </script>
+    <script type="module" src="./dist/frontend/src/main.js" defer></script>
 </head>
 <body>
     <header class="app-header">
-        <div class="logo">KpiBoard</div>
+        <div class="logo">Одна помилка і ти помилився</div>
         
         <div class="user-panel">
             <button type="button" id="auth-btn" class="btn outline">Увійти</button>
-            <span id="user-greeting" hidden>Привіт, <span id="user-name-display"></span></span>
+            
+            <span id="user-greeting" hidden>
+                <button type="button" id="logout-btn" class="btn outline small" >Вийти</button>
+                Привіт, <span id="user-name-display"></span>
+            </span>
         </div>
     </header>
            <div id="notice" class="notice-container"></div>
@@ -55,7 +66,6 @@
                                 <th id="sort-date-th">
                                     Дата <span id="sort-arrow">▼</span>
                                 </th>
-                                <th>Дії</th>
                             </tr>
                         </thead>
                         <tbody id="posts-body">
@@ -107,6 +117,37 @@
 
         </main>
     </div>
+    <div id="user-modal-overlay" class="modal-overlay" hidden>
+    <div class="modal-content panel">
+        
+        <div class="toolbar">
+            <h2 id="modal-title">Створити акаунт</h2>
+            <button type="button" id="close-user-modal-btn" class="btn outline">✕</button>
+        </div>
+        
+        <form id="create-user-form">
+            <div class="field" id="name-field-wrapper">
+                <label for="user-name">Ім'я</label>
+                <input type="text" id="user-name" name="name" placeholder="Введіть ваше ім'я">
+            </div>
 
+            <div class="field">
+                <label for="user-email">Email</label>
+                <input type="email" id="user-email" name="email" placeholder="example@kpi.ua">
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" id="modal-submit-btn" class="btn primary">Зареєструватися</button>
+            </div>
+
+            <div>
+                <a href="#" id="toggle-auth-mode">
+                    Вже маєте акаунт? Увійти
+                </a>
+            </div>
+        </form>
+        
+    </div>
+</div>
 </body>
 </html>

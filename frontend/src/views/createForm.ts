@@ -7,6 +7,12 @@ import { showNotice, clearError, showError } from '../ui.js';
 import { loadPosts } from './postsList.js';
 import { categoryError, categoryInput, contentError, contentInput, createPostForm, titleError, titleInput } from '../dom.js';
 
+export function clearAllPostFormErrors() {
+    clearError(titleInput, titleError);
+    clearError(categoryInput, categoryError);
+    clearError(contentInput, contentError);
+}
+
 function validatePostForm(
     titleInput: HTMLInputElement, titleError: HTMLDivElement,
     categoryInput: HTMLSelectElement, categoryError: HTMLDivElement,
@@ -50,6 +56,8 @@ export async function initEditPostForm(postId: string) {
         createPostForm.dataset.editPostId = postId;
         const submitBtn = createPostForm.querySelector('button[type="submit"]') as HTMLButtonElement;
         if (submitBtn) submitBtn.textContent = 'Зберегти пост';
+
+        clearAllPostFormErrors();
         
         showView('Form');
     } catch (error) {
@@ -61,6 +69,7 @@ export function resetPostFormToCreate() {
     delete createPostForm.dataset.editPostId;
     const submitBtn = createPostForm.querySelector('button[type="submit"]') as HTMLButtonElement;
     if (submitBtn) submitBtn.textContent = 'Опублікувати';
+    clearAllPostFormErrors();
 }
 export async function handleCreatePostSubmit(formElement: HTMLFormElement) {
     if (!state.currentUserId) {

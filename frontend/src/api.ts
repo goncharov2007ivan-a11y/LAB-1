@@ -123,6 +123,22 @@ export const api = {
         return await request<UserViewDto>(`/users/${userId}`, { method: 'GET' });
     },
 
+    loginUser: async (email: string) => {
+        const users = await request<UserViewDto[]>('/users', { method: 'GET' });
+        
+        if (!users || !Array.isArray(users)) {
+            throw new Error("Помилка отримання даних з сервера");
+        }
+        
+        const user = users.find(u => u.email === email);
+        
+        if (!user) {
+            throw new Error("Користувача з таким email не знайдено");
+        }
+        
+        return user;
+    },
+
     createUser: async (userData: CreateUserDto) => {
         return await request<UserViewDto>('/users', {
             method: 'POST',

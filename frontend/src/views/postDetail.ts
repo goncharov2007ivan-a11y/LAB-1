@@ -44,7 +44,8 @@ export async function loadPostDetails(postId: string) {
                 <form id="add-comment-form">
                     <input type="hidden" id="comment-post-id" value="${post.id}">
                     <div class="field">
-                        <textarea id="comment-text" rows="3" required placeholder="Напишіть коментар..."></textarea>
+                        <textarea id="comment-text" rows="3" placeholder="Напишіть коментар..."></textarea>
+                        <div id="commentError" class="error-text"></div>
                     </div>
                     <div class="form-actions">
                         <button type="submit" class="btn primary">Відправити коментар</button>

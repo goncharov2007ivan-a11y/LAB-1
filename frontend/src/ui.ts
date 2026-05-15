@@ -1,4 +1,5 @@
 
+
 export function showNotice(message: string, isError: boolean = false) {
     const noticeEl = document.getElementById('notice') as HTMLDivElement;
     if (!noticeEl) return;

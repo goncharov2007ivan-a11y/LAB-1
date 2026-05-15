@@ -23,7 +23,7 @@ export const CreateCommentSchema = z.object({
   body: z.object({
     text: z
       .string({ message: "Текст коментаря обов'язковий" })
-      .min(1, "Мінімум 1 символ")
+      .min(3, "Мінімум 3 символи")
       .max(300, "Максимум 300 символів"),
     authorId: z
       .string({ message: "ID автора повинен бути рядком" }),
