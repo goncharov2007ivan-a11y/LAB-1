@@ -1,5 +1,5 @@
 import z from "zod";
-import { all, get, run, escapeSqlString } from "../db/dbClient.js";
+import { all, get, run } from "../db/dbClient.js";
 import type { Comment } from "../../../shared/dtos/comments.dto.js";
 
 interface CreateCommentData {
@@ -33,35 +33,42 @@ function mapToComment(row: unknown): Comment {
 }
 export const commentsRepository = {
   getCommentsByPostId: async (postId: string): Promise<Comment[]> => {
-    const pId = Number(postId);
     const sql = `
       SELECT c.*, u.name as authorName 
       FROM Comments c 
       JOIN Users u ON c.authorId = u.id 
-      WHERE c.postId = ${pId} AND c.isDeleted = 0
+      WHERE c.postId = ? AND c.isDeleted = 0
       ORDER BY c.id ASC; 
     `;
-    const rows = await all(sql);
+    const rows = await all(sql, [Number(postId)]);
     return rows.map(mapToComment);
   },
 
-  create: async (data: CreateCommentData): Promise<Comment> => {
-    const safeText = escapeSqlString(data.text);
-    const safeDate = escapeSqlString(data.date);
+  getById: async (id: string): Promise<Comment | null> => {
+    const sql = `
+      SELECT c.*, u.name as authorName 
+      FROM Comments c 
+      JOIN Users u ON c.authorId = u.id 
+      WHERE c.id = ? AND c.isDeleted = 0;
+    `;
+    const row = await get(sql, [Number(id)]);
+    return row ? mapToComment(row) : null; 
+  },
 
+  create: async (data: CreateCommentData): Promise<Comment> => {
     const sql = `
       INSERT INTO Comments (postId, authorId, text, date, isDeleted) 
-      VALUES (${data.postId}, ${data.authorId}, '${safeText}', '${safeDate}', 0);
+      VALUES (?, ?, ?, ?, 0);
     `;
-    const result = await run(sql);
+    const result = await run(sql, [data.postId, data.authorId, data.text, data.date]);
 
     const createdSql = `
       SELECT c.*, u.name as authorName 
       FROM Comments c 
       JOIN Users u ON c.authorId = u.id 
-      WHERE c.id = ${result.lastID};
+      WHERE c.id = ?;
     `;
-    const row = await get(createdSql);
+    const row = await get(createdSql, [result.lastID]);
     return mapToComment(row);
   },
 
@@ -69,26 +76,17 @@ export const commentsRepository = {
     id: string,
     updatedFields: { text?: string | undefined },
   ): Promise<Comment | null> => {
-    const commentId = Number(id);
-    const safeText = escapeSqlString(updatedFields.text || "");
 
-    const sql = `UPDATE Comments SET text = '${safeText}' WHERE id = ${commentId} AND isDeleted = 0;`;
-    const result = await run(sql);
+    const sql = `UPDATE Comments SET text = ? WHERE id = ? AND isDeleted = 0;`;
+    const result = await run(sql, [updatedFields.text || "", Number(id)]);
     if (result.changes === 0) return null;
 
-    const getSql = `
-      SELECT c.*, u.name as authorName 
-      FROM Comments c JOIN Users u ON c.authorId = u.id 
-      WHERE c.id = ${commentId};
-    `;
-    const row = await get(getSql);
-    return row ? mapToComment(row) : null;
+    return await commentsRepository.getById(id);
   },
 
   delete: async (id: string): Promise<boolean> => {
-    const commentId = Number(id);
-    const sql = `UPDATE Comments SET isDeleted = 1 WHERE id = ${commentId};`;
-    const result = await run(sql);
+    const sql = `UPDATE Comments SET isDeleted = 1 WHERE id = ?;`;
+    const result = await run(sql, [Number(id)]);
     return result.changes > 0;
   },
 };

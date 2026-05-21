@@ -1,6 +1,6 @@
 import type { Post } from "../../../shared/dtos/posts.dto.js";
 import {z} from "zod";
-import { all, get, run, escapeSqlString } from "../db/dbClient.js";
+import { all, get, run } from "../db/dbClient.js";
 
 interface CreatePostData {
   title: string;
@@ -48,49 +48,42 @@ export const postsRepository = {
   },
 
   getPostsByUserId: async (userId: string): Promise<Post[]> => {
-    const uId = Number(userId);
     const sql = `
       SELECT p.*, u.name as authorName 
       FROM Posts p 
       JOIN Users u ON p.authorId = u.id 
-      WHERE p.authorId = ${uId} AND p.isDeleted = 0
+      WHERE p.authorId = ? AND p.isDeleted = 0
       ORDER BY p.id DESC;
     `;
-    const rows = await all(sql);
+    const rows = await all(sql, [Number(userId)]);
     return rows.map(mapToPost);
   },
 
   getById: async (id: string): Promise<Post | undefined> => {
-    const postId = Number(id);
     const sql = `
     SELECT p.*, u.name as authorName 
       FROM Posts p 
       JOIN Users u ON p.authorId = u.id 
-      WHERE p.id = ${postId} AND p.isDeleted = 0; 
+      WHERE p.id = ? AND p.isDeleted = 0; 
     `;
-    const row = await get(sql);
+    const row = await get(sql, [Number(id)]);
     return row ? mapToPost(row) : undefined;
   },
 
   create: async (post: CreatePostData): Promise<Post> => {
-    const safeCategory = escapeSqlString(post.category);
-    const safeContent = escapeSqlString(post.content);
-    const safeDate = escapeSqlString(post.date);
-    const safeTitle = escapeSqlString(post.title);
-
     const sql = `
       INSERT INTO Posts (title, category, content, authorId, date, isDeleted) 
-      VALUES ('${safeTitle}', '${safeCategory}', '${safeContent}', ${post.authorId}, '${safeDate}', 0);
+      VALUES (?, ?, ?, ?, ?, 0);
     `;
-    const result = await run(sql);
+    const result = await run(sql, [post.title, post.category, post.content, post.authorId, post.date]);
 
     const createdPost = `
     SELECT p.id, p.title, p.category, p.content, p.date, p.isDeleted, p.authorId, u.name as authorName 
     FROM Posts p 
     JOIN Users u ON p.authorId = u.id
-    WHERE p.id = ${result.lastID};
+    WHERE p.id = ?;
     `;
-    const row = await get(createdPost);
+    const row = await get(createdPost, [result.lastID]);
     return mapToPost(row);
   },
 
@@ -98,18 +91,17 @@ export const postsRepository = {
     id: string,
     updatedFields: Partial<Post>,
   ): Promise<Post | null> => {
-    const postId = Number(id);
-
-    const safeTitle = escapeSqlString(updatedFields.title || "");
-    const safeContent = escapeSqlString(updatedFields.content || "");
-    const safeCategory = escapeSqlString(updatedFields.category || "");
-
     const sql = `
       UPDATE Posts 
-      SET title = '${safeTitle}', content = '${safeContent}', category = '${safeCategory}'
-      WHERE id = ${postId} AND isDeleted = 0;
+      SET title = ?, content = ?, category = ?
+      WHERE id = ? AND isDeleted = 0;
     `;
-    const result = await run(sql);
+    const result = await run(sql, [
+      updatedFields.title || "", 
+      updatedFields.content || "", 
+      updatedFields.category || "", 
+      Number(id)
+    ]);
     if (result.changes === 0) return null;
 
     const updatedPost = await postsRepository.getById(id);
@@ -117,9 +109,8 @@ export const postsRepository = {
   },
 
   delete: async (id: string): Promise<boolean> => {
-    const postId = Number(id);
-    const sql = `UPDATE Posts SET isDeleted = 1 WHERE id = ${postId};`;
-    const result = await run(sql);
+    const sql = `UPDATE Posts SET isDeleted = 1 WHERE id = ?`;
+    const result = await run(sql, [Number(id)]);
     return result.changes > 0;
   },
 
@@ -131,14 +122,16 @@ export const postsRepository = {
     sort?: string;
   }): Promise<{ items: Post[]; total: number }> => {
     let whereInj = "WHERE p.isDeleted = 0";
+    const params: any[] = [];
 
     if (options.search) {
-      whereInj += ` AND p.title LIKE '%${options.search}%'`;
+      whereInj += ` AND p.title LIKE ?`;
+      params.push(`%${options.search}%`);
     }
 
     if (options.category && options.category !== "Всі категорії") {
-      const safeCategory = escapeSqlString(options.category);
-      whereInj += ` AND p.category = '${safeCategory}'`;
+      whereInj += ` AND p.category = ?`;
+      params.push(options.category);
     }
 
     let orderClause = "ORDER BY p.id DESC";
@@ -150,7 +143,7 @@ export const postsRepository = {
     }
 
     const countSql = `SELECT COUNT(*) as total FROM Posts p ${whereInj};`;
-    const countResult = await get<{ total: number }>(countSql);
+    const countResult = await get<{ total: number }>(countSql, params);
     const total = countResult?.total || 0;
 
     const sql = `
@@ -159,9 +152,10 @@ export const postsRepository = {
       JOIN Users u ON p.authorId = u.id 
       ${whereInj}
       ${orderClause}
-      LIMIT ${options.limit} OFFSET ${options.offset};
+      LIMIT ? OFFSET ?;
     `;
-    const rows = await all(sql);
+    params.push(options.limit, options.offset);
+    const rows = await all(sql, params);
 
     return { items: rows.map(mapToPost), total };
   },

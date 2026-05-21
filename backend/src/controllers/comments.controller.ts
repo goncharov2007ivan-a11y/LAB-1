@@ -21,8 +21,16 @@ export const commentsController = {
     next: NextFunction,
   ): Promise<void> => {
     try {
-      const newComment = await commentsService.create(req.body);
-      res.status(201).json(newComment);
+      const { postId, text } = req.body;
+      const currentUserId = req.headers["User-id"] as string;
+
+      const comment = await commentsService.create({
+        postId,
+        authorId: currentUserId,
+        text,
+      });
+
+      res.status(201).json(comment);
     } catch (error) {
       next(error);
     }
@@ -34,7 +42,9 @@ export const commentsController = {
   ): Promise<void> => {
     try {
       const id = req.params.id as string;
-      const updatedComment = await commentsService.update(id, req.body);
+      const currentUserId = req.headers['User-id'] as string;
+      
+      const updatedComment = await commentsService.update(id, currentUserId, req.body);
       res.status(200).json(updatedComment);
     } catch (error) {
       next(error);
@@ -47,7 +57,9 @@ export const commentsController = {
   ): Promise<void> => {
     try {
       const id = req.params.id as string;
-      await commentsService.delete(id);
+      const currentUserId = req.headers['user-id'] as string;
+
+      await commentsService.delete(id, currentUserId);
       res.status(204).send();
     } catch (error) {
       next(error);

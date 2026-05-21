@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { all, get, run, escapeSqlString } from "../db/dbClient.js";
+import { all, get, run } from "../db/dbClient.js";
 import type { User } from "../../../shared/dtos/users.dto.js";
 
 interface CreateUserData {
@@ -35,25 +35,20 @@ export const usersRepository = {
   },
 
   getById: async (id: string): Promise<User | undefined> => {
-    const userId = Number(id);
-    const sql = `SELECT * FROM Users WHERE id = ${userId} AND isDeleted = 0;`;
-    const row = await get(sql);
+    const sql = `SELECT * FROM Users WHERE id = ? AND isDeleted = 0;`;
+    const row = await get(sql, [Number(id)]);
     return row ? mapToUser(row) : undefined;
   },
 
   create: async (data: CreateUserData): Promise<User> => {
-    const safeName = escapeSqlString(data.name);
-    const safeEmail = escapeSqlString(data.email);
-    const safeDate = escapeSqlString(data.date);
-
     const sql = `
       INSERT INTO Users (name, email, date, isDeleted) 
-      VALUES ('${safeName}', '${safeEmail}', '${safeDate}', 0);
+      VALUES (?, ?, ?, 0);
     `;
-    const result = await run(sql);
+    const result = await run(sql, [data.name, data.email, data.date]);
 
-    const createdSql = `SELECT * FROM Users WHERE id = ${result.lastID};`;
-    const row = await get(createdSql);
+    const createdSql = `SELECT * FROM Users WHERE id = ?;`;
+    const row = await get(createdSql, [result.lastID]);
     return mapToUser(row);
   },
 
@@ -61,27 +56,32 @@ export const usersRepository = {
     id: string,
     updatedFields: { name?: string | undefined; email?: string | undefined },
   ): Promise<User | null> => {
-    const userId = Number(id);
     let setQuery = [];
+    let params = []; 
 
-    if (updatedFields.name)
-      setQuery.push(`name = '${escapeSqlString(updatedFields.name)}'`);
-    if (updatedFields.email)
-      setQuery.push(`email = '${escapeSqlString(updatedFields.email)}'`);
+    if (updatedFields.name) {
+      setQuery.push(`name = ?`);
+      params.push(updatedFields.name);
+    }
+    if (updatedFields.email) {
+      setQuery.push(`email = ?`);
+      params.push(updatedFields.email);
+    }
 
     if (setQuery.length === 0) return await usersRepository.getById(id) || null;
 
-    const sql = `UPDATE Users SET ${setQuery.join(", ")} WHERE id = ${userId} AND isDeleted = 0;`;
-    const result = await run(sql);
+    params.push(Number(id));
+
+    const sql = `UPDATE Users SET ${setQuery.join(", ")} WHERE id = ? AND isDeleted = 0;`;
+    const result = await run(sql, params);
 
     if (result.changes === 0) return null;
     return await usersRepository.getById(id) || null;
   },
 
   delete: async (id: string): Promise<boolean> => {
-    const userId = Number(id);
-    const sql = `UPDATE Users SET isDeleted = 1 WHERE id = ${userId};`;
-    const result = await run(sql);
+    const sql = `UPDATE Users SET isDeleted = 1 WHERE id = ?;`;
+    const result = await run(sql, [Number(id)]);
     return result.changes > 0;
   },
 };

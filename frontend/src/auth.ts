@@ -41,11 +41,11 @@ export function updateAuthUI() {
     const savedName = localStorage.getItem('currentUserName');
     
     if (state.currentUserId && savedName) {
-        authBtn.textContent = "Вийти";
-        authBtn.classList.replace('primary', 'outline');
+        authBtn.hidden = true; 
         userNameDisplay.textContent = savedName;
         userGreeting.hidden = false;
     } else {
+        authBtn.hidden = false;
         authBtn.textContent = "Увійти";
         authBtn.classList.replace('outline', 'primary');
         userGreeting.hidden = true;

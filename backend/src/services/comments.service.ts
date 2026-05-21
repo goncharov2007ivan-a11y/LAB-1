@@ -24,6 +24,9 @@ export const commentsService = {
   },
 
   create: async (dto: CreateCommentDto): Promise<CommentViewDto> => {
+    if (!dto.authorId) {
+      throw new Error("Необхідна авторизація");
+    }
     const newComment = {
       text: dto.text,
       authorId: dto.authorId,
@@ -36,16 +39,34 @@ export const commentsService = {
 
   update: async (
     id: string,
+    currentUserId: string,
     dto: UpdateCommentDto,
   ): Promise<CommentViewDto> => {
+    if (!currentUserId) throw new Error("Необхідна авторизація");
+    
+    const comment = await commentsRepository.getById(id);
+    if (!comment) throw new Error("Коментар не знайдено");
+
+    if (String(comment.authorId) !== String(currentUserId)) {
+      throw new Error("Доступ заборонено");
+    }
+
     const updatedComment = await commentsRepository.update(id, dto);
     if (!updatedComment) throw new Error("Коментар не знайдено");
-    return toCommentViewDto(updatedComment);
+
+    return toCommentViewDto(comment);
   },
 
-  delete: async (id: string): Promise<boolean> => {
-    const isDeleted = await commentsRepository.delete(id);
-    if (!isDeleted) throw new Error("Коментар не знайдено");
-    return true;
+  delete: async (id: string, currentUserId: string): Promise<boolean> => {
+    if (!currentUserId) throw new Error("Необхідна авторизація");
+
+    const comment = await commentsRepository.getById(id);
+    if (!comment) throw new Error("Коментар не знайдено");
+
+    if (String(comment.authorId) !== String(currentUserId)) {
+      throw new Error("Доступ заборонено");
+    }
+
+    return await commentsRepository.delete(id);
   },
 };

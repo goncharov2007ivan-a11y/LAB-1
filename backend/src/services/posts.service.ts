@@ -47,6 +47,9 @@ export const postsService = {
     return toPostViewDto(post);
   },
   create: async (dto: CreatePostDto): Promise<PostViewDto> => {
+    if (!dto.authorId) {
+      throw new Error("Необхідна авторизація");
+    }
     const newPost = {
       title: dto.title,
       category: dto.category,
@@ -57,20 +60,34 @@ export const postsService = {
     const createdPost = await postsRepository.create(newPost);
     return toPostViewDto(createdPost);
   },
-  update: async (id: string, dto: UpdatePostDto): Promise<PostViewDto> => {
+  update: async (id: string, currentUserId: string, dto: UpdatePostDto): Promise<PostViewDto> => {
+    if (!currentUserId) throw new Error("Необхідна авторизація");
+
     const existingPost = await postsRepository.getById(id);
     if (!existingPost || existingPost.isDeleted) {
       throw new Error("Пост не знайдено");
     }
+
+    if (String(existingPost.authorId) !== String(currentUserId)) {
+      throw new Error("Доступ заборонено");
+    }
+
     const updatedPost = await postsRepository.update(id, dto as Partial<Post>);
     return toPostViewDto(updatedPost!);
   },
-  delete: async (id: string): Promise<boolean> => {
+
+  delete: async (id: string, currentUserId: string): Promise<boolean> => {
+    if (!currentUserId) throw new Error("Необхідна авторизація");
+
     const existingPost = await postsRepository.getById(id);
     if (!existingPost || existingPost.isDeleted) {
       throw new Error("Пост не знайдено");
     }
+
+    if (String(existingPost.authorId) !== String(currentUserId)) {
+      throw new Error("Доступ заборонено");
+    }
+
     return postsRepository.delete(id);
   },
-
 };

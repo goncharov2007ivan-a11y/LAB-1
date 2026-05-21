@@ -24,3 +24,13 @@ export const contentInput = document.querySelector('#content') as HTMLTextAreaEl
 export const titleError = document.getElementById('titleError') as HTMLDivElement;
 export const categoryError = document.getElementById('categoryError') as HTMLDivElement;
 export const contentError = document.getElementById('contentError') as HTMLDivElement;
+
+export const modalOverlay = document.getElementById('user-modal-overlay') as HTMLDivElement;
+export const userForm = document.getElementById('create-user-form') as HTMLFormElement;
+export const nameInput = document.getElementById('user-name') as HTMLInputElement;
+export const emailInput = document.getElementById('user-email') as HTMLInputElement;
+
+export const modalTitle = document.getElementById('modal-title') as HTMLHeadingElement;
+export const nameFieldWrapper = document.getElementById('name-field-wrapper') as HTMLDivElement;
+export const modalSubmitBtn = document.getElementById('modal-submit-btn') as HTMLButtonElement;
+export const toggleAuthModeBtn = document.getElementById('toggle-auth-mode') as HTMLAnchorElement;

@@ -36,15 +36,26 @@ export const usersService = {
     return toUserViewDto(createdUser);
   },
 
-  update: async (id: string, dto: UpdateUserDto): Promise<UserViewDto> => {
+  update: async (id: string, currentUserId: string, dto: UpdateUserDto): Promise<UserViewDto> => {
+    if (!currentUserId) throw new Error("Необхідна авторизація");
+
+    if (String(id) !== String(currentUserId)) {
+      throw new Error("Доступ заборонено");
+    }
+
     const updatedUser = await usersRepository.update(id, dto);
     if (!updatedUser) throw new Error("Користувача не знайдено");
     return toUserViewDto(updatedUser);
   },
 
-  delete: async (id: string): Promise<void> => {
+  delete: async (id: string, currentUserId: string): Promise<void> => {
+    if (!currentUserId) throw new Error("Необхідна авторизація");
+
+    if (String(id) !== String(currentUserId)) {
+      throw new Error("Доступ заборонено");
+    }
+
     const isDeleted = await usersRepository.delete(id);
     if (!isDeleted) throw new Error("Користувача не знайдено");
   },
-  
 };

@@ -36,19 +36,19 @@ function renderPosts() {
         tr.dataset.viewId = post.id;
 
         const titleTd = document.createElement('td');
-        titleTd.innerHTML = post.title;
+        titleTd.textContent = post.title;
 
         const categoryTd = document.createElement('td');
-        categoryTd.innerHTML = post.category;
+        categoryTd.textContent = post.category;
 
         const contentTd = document.createElement('td');
-        contentTd.innerHTML = post.content;
+        contentTd.textContent = post.content;
 
         const authorTd = document.createElement('td');
-        authorTd.innerHTML = post.author;
+        authorTd.textContent = post.author;
 
         const dateTd = document.createElement('td');
-        dateTd.innerHTML = new Date(post.date).toLocaleDateString('uk-UA');
+        dateTd.textContent = new Date(post.date).toLocaleDateString('uk-UA');
 
 
         tr.append(titleTd, categoryTd, contentTd, authorTd, dateTd);

@@ -6,6 +6,7 @@ import { migrate } from "./db/migrate.js";
 import { commentsRouter } from "./routes/comments.routes.js";
 import { errorHandler } from "./middleware/error.middleware.js";
 import { logger } from "./middleware/logger.middleware.js";
+import { securityHeaders } from "./middleware/security.middleware.js";
 const allowedOrigins = [
   "http://localhost:8080"
 ]
@@ -20,6 +21,7 @@ app.use(cors({
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization", 'User-Id']
 }));
+app.use(securityHeaders);
 app.options(/.*/, cors());
 app.use(express.json());
 app.use(logger);

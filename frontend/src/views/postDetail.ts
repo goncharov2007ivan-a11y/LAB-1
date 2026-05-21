@@ -18,98 +18,138 @@ export async function loadPostDetails(postId: string) {
 
         viewPost.innerHTML = `
             <div class="toolbar">
-            <h2>Деталі оголошення</h2>
-                <button type="button" id="back-from-detail-btn" class="btn outline">Назад</button>
-                ${isMyPost ? `
-                        <button type="button" id="edit-post-btn" data-post-id="${post.id}" class="btn outline">Редагувати</button>
-                        <button type="button" id="delete-post-btn" data-post-id="${post.id}" class="btn delete">Видалити</button>
-                ` : ''}
+                <h2>Деталі оголошення</h2>
+                <div class="toolbar-actions" id="toolbar-actions">
+                    <button type="button" id="back-from-detail-btn" class="btn outline">Назад</button>
+                    </div>
             </div>
 
             <div class="panel">
-                <h3>${post.title}</h3>
+                <h3 id="post-title"></h3>
 
                 <div class="post-meta">
-                    <span class="badge">${post.category}</span>
-                    <span class="post-author">Автор: ${post.author}</span>
-                    <span class="post-date">Дата: ${new Date(post.date).toLocaleDateString('uk-UA')}</span>
+                    <span class="badge" id="post-category"></span>
+                    <span class="post-author" id="post-author"></span>
+                    <span class="post-date" id="post-date"></span>
                 </div>
 
-                <div class="post-content">
-                    ${post.content}
-                </div>
+                <div class="post-content" id="post-content"></div>
+            </div>
 
             <div class="panel">
                 <h3>Коментарі</h3>
-                <form id="add-comment-form">
-                    <input type="hidden" id="comment-post-id" value="${post.id}">
-                    <div class="field">
-                        <textarea id="comment-text" rows="3" placeholder="Напишіть коментар..."></textarea>
-                        <div id="commentError" class="error-text"></div>
-                    </div>
-                    <div class="form-actions">
-                        <button type="submit" class="btn primary">Відправити коментар</button>
-                    </div>
-                </form>
-
                 <div id="comments-list">
                     <p>Завантаження коментарів...</p>
                 </div>
             </div>
         `;
+
+        document.getElementById('post-title')!.textContent = post.title;
+        document.getElementById('post-category')!.textContent = post.category;
+        document.getElementById('post-author')!.textContent = `Автор: ${post.author}`;
+        document.getElementById('post-date')!.textContent = `Дата: ${new Date(post.date).toLocaleDateString('uk-UA')}`;
+        document.getElementById('post-content')!.textContent = post.content;
+
+        if (isMyPost) {
+            const actionsContainer = document.getElementById('toolbar-actions');
+
+            const editBtn = document.createElement('button');
+            editBtn.type = 'button';
+            editBtn.id = 'edit-post-btn';
+            editBtn.className = 'btn outline';
+            editBtn.textContent = 'Редагувати';
+            editBtn.dataset.postId = post.id;
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.type = 'button';
+            deleteBtn.id = 'delete-post-btn';
+            deleteBtn.className = 'btn delete';
+            deleteBtn.textContent = 'Видалити';
+            deleteBtn.dataset.postId = post.id;
+
+            actionsContainer?.appendChild(editBtn);
+            actionsContainer?.appendChild(deleteBtn);
+        }
+
         await loadComments(postId);
-} catch (error) {
-    console.error(error);
+    } catch (error) {
+        console.error(error);
         viewPost.innerHTML = `
-            <div class="toolbar">
-                <h2>Помилка</h2>
-                <button type="button" id="back-from-detail-btn" class="btn outline">Назад до списку</button>
-            </div>
             <div class="panel">
-                <p>Не вдалося завантажити пост. Можливо, його було видалено.</p>
+                <p class="error-text">Не вдалося завантажити деталі оголошення.</p>
             </div>
         `;
-}
+    }
 }
 
 export async function loadComments(postId: string) {
     const commentsList = document.getElementById('comments-list');
-    
-    if (!commentsList) {
-        console.log("[UI] Блок comments-list не знайдено на сторінці!");
-        return;
-    }
+    if (!commentsList) return;
 
     try {
         const comments = await api.getComments(postId);
-        const currentUserId = String(localStorage.getItem('currentUserId')); 
+        const currentUserId = localStorage.getItem('currentUserId'); 
         
+        commentsList.innerHTML = '';
+
         if (!comments || comments.length === 0) {
-            commentsList.innerHTML = '<p class="empty-msg">Поки немає коментарів.</p>';
+            const emptyMsg = document.createElement('p');
+            emptyMsg.className = 'empty-msg';
+            emptyMsg.textContent = 'Поки немає коментарів.';
+            commentsList.appendChild(emptyMsg);
             return;
         }
 
-        commentsList.innerHTML = comments.map((c: any) => {
+        comments.forEach((c: any) => {
             const isMyComment = currentUserId && String(currentUserId) === String(c.authorId);
 
-            return `
-            <div class="comment-item">
-                <div class="comment-header">
-                    <strong class="comment-author">${c.author}</strong> 
-                    <span class="comment-date">${new Date(c.date).toLocaleString('uk-UA')}</span>
-                    ${isMyComment ? `
-                            <button type="button" class="btn outline edit-comment-btn" data-comment-id="${c.id}" data-current-text="${c.text}">Редагувати</button>
-                            <button type="button" class="btn outline delete-comment-btn" data-comment-id="${c.id}">Видалити</button>
-                    ` : ''}
-                </div>
-                <div class="comment-body">
-                    ${c.text}
-                </div>
-            </div>
-            `;
-        }).join('');
+            const commentItem = document.createElement('div');
+            commentItem.className = 'comment-item';
+
+            const commentHeader = document.createElement('div');
+            commentHeader.className = 'comment-header';
+
+            const authorNode = document.createElement('strong');
+            authorNode.className = 'comment-author';
+            authorNode.textContent = c.author;
+
+            const dateNode = document.createElement('span');
+            dateNode.className = 'comment-date';
+            dateNode.textContent = new Date(c.date).toLocaleString('uk-UA');
+
+            commentHeader.appendChild(authorNode);
+            commentHeader.appendChild(dateNode);
+
+            if (isMyComment) {
+                const editCommentBtn = document.createElement('button');
+                editCommentBtn.type = 'button';
+                editCommentBtn.className = 'btn outline edit-comment-btn';
+                editCommentBtn.textContent = 'Редагувати';
+                editCommentBtn.dataset.commentId = c.id;
+                editCommentBtn.dataset.currentText = c.text;
+
+                const deleteCommentBtn = document.createElement('button');
+                deleteCommentBtn.type = 'button';
+                deleteCommentBtn.className = 'btn outline delete-comment-btn';
+                deleteCommentBtn.textContent = 'Видалити';
+                deleteCommentBtn.dataset.commentId = c.id;
+
+                commentHeader.appendChild(editCommentBtn);
+                commentHeader.appendChild(deleteCommentBtn);
+            }
+
+            const commentBody = document.createElement('div');
+            commentBody.className = 'comment-body';
+            commentBody.textContent = c.text;
+
+            commentItem.appendChild(commentHeader);
+            commentItem.appendChild(commentBody);
+            
+            commentsList.appendChild(commentItem);
+        });
+
     } catch (error) {
         console.error(error);
-        commentsList.innerHTML = '<p class="error-msg">Не вдалося завантажити коментарі.</p>';
+        commentsList.innerHTML = '<p class="error-text">Не вдалося завантажити коментарі.</p>';
     }
 }

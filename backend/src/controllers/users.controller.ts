@@ -46,7 +46,9 @@ export const usersController = {
   ): Promise<void> => {
     try {
       const id = req.params.id as string;
-      const updatedUser = await usersService.update(id, req.body);
+      const currentUserId = req.headers["user-id"] as string;
+
+      const updatedUser = await usersService.update(id, currentUserId, req.body);
       res.status(200).json(updatedUser);
     } catch (error) {
       next(error);
@@ -59,11 +61,12 @@ export const usersController = {
   ): Promise<void> => {
     try {
       const id = req.params.id as string;
-      await usersService.delete(id);
+      const currentUserId = req.headers["user-id"] as string;
+
+      await usersService.delete(id, currentUserId);
       res.status(204).send();
     } catch (error) {
       next(error);
     }
   },
-  
 };

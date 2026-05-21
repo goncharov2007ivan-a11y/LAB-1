@@ -50,8 +50,8 @@ export const postsController = {
     next: NextFunction,
   ): Promise<void> => {
     try {
-      const dto = req.body;
-      const newPost = await postsService.create(dto);
+      const currentUserId = req.headers["user-id"] as string;
+      const newPost = await postsService.create(req.body);
       res.status(201).json(newPost);
     } catch (error) {
       next(error);
@@ -64,8 +64,9 @@ export const postsController = {
   ): Promise<void> => {
     try {
       const id = req.params.id as string;
-      const dto = req.body;
-      const updatedPost = await postsService.update(id, dto);
+      const currentUserId = req.headers["user-id"] as string;
+
+      const updatedPost = await postsService.update(id, currentUserId, req.body);
       res.status(200).json(updatedPost);
     } catch (error) {
       next(error);
@@ -77,14 +78,9 @@ export const postsController = {
     next: NextFunction,
   ): Promise<void> => {
     try {
-      const postId = req.params.id as string;
-      const requestingUserId = req.header('User-Id');
-      const post = await postsService.getById(postId);
-      if(!post) {
-        res.status(404).json({ message: "Пост не знайдено" });
-          return;
-      }
-      await postsService.delete(postId);
+      const id = req.params.id as string;
+      const currentUserId = req.headers["user-id"] as string;
+      await postsService.delete(id, currentUserId);
       res.status(204).send();
     } catch (error) {
       next(error);

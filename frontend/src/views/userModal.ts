@@ -2,18 +2,10 @@ import { api } from '../api.js';
 import { state } from '../state.js';
 import { showNotice, showError, clearError } from '../ui.js';
 import { CreateUserSchema } from '../../../shared/dtos/users.dto.js';
+import { emailInput, modalOverlay, modalSubmitBtn, modalTitle, nameFieldWrapper, nameInput, toggleAuthModeBtn, userForm } from '../dom.js';
 
-let isLoginMode = false;
+let isLoginMode = true;
 
-const modalOverlay = document.getElementById('user-modal-overlay') as HTMLDivElement;
-const userForm = document.getElementById('create-user-form') as HTMLFormElement;
-const nameInput = document.getElementById('user-name') as HTMLInputElement;
-const emailInput = document.getElementById('user-email') as HTMLInputElement;
-
-const modalTitle = document.getElementById('modal-title') as HTMLHeadingElement;
-const nameFieldWrapper = document.getElementById('name-field-wrapper') as HTMLDivElement;
-const modalSubmitBtn = document.getElementById('modal-submit-btn') as HTMLButtonElement;
-const toggleAuthModeBtn = document.getElementById('toggle-auth-mode') as HTMLAnchorElement;
 
 const nameError = createErrorElement(nameInput, 'userNameError');
 const emailError = createErrorElement(emailInput, 'userEmailError');
