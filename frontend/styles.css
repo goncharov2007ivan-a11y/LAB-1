@@ -370,3 +370,55 @@ textarea:focus {
 [hidden] {
     display: none !important;
 }
+
+#pagination {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 20px;
+}
+.form-actions.stacked {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 25px;
+    text-align: left; 
+}
+
+.action-row {
+    display: flex;
+    gap: 10px;
+}
+
+.btn.block {
+    width: 100%;
+    padding: 12px;
+}
+
+.btn.flex-1 {
+    flex: 1;
+}
+#edit-profile-form .form-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+#edit-profile-form .form-actions > button[type="submit"] {
+    width: 100%;
+    padding: 12px;
+}
+
+#edit-profile-form .form-actions > div {
+    display: flex;
+    gap: 10px;
+}
+
+#edit-profile-form .form-actions > div > button {
+    flex: 1;
+}
+
+#view-form {
+    max-width: 800px; 
+    margin: 0 auto;   
+}

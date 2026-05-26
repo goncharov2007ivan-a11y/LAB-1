@@ -1,13 +1,15 @@
 import { showView } from './app.js';
-import { handleAuth, initAuth } from './auth.js';
+import { initAuth } from './auth.js';
 import { handleCreatePostSubmit, initEditPostForm, resetPostFormToCreate } from './views/createForm.js';
 import { loadPosts } from './views/postsList.js';
 import { state } from './state.js';
-import { authBtn, backToListBtn, categoryList, createPostBtn, createPostForm, searchInput } from './dom.js';
+import { categoryList, searchInput } from './dom.js';
 import { api } from './api.js';
 import { loadComments, loadPostDetails } from './views/postDetail.js';
 import { clearError, showError, showNotice } from './ui.js';
 import { closeUserModal, handleUserRegistration, openUserModal } from './views/userModal.js';
+import { openProfileModal, closeProfileModal } from './views/profileModal.js';
+import { UpdateUserSchema } from '../../shared/dtos/users.dto.js';
 
 showView('List');
 initAuth();
@@ -43,12 +45,37 @@ document.addEventListener('click', async (event) => {
         return closeUserModal();
     }
 
-    if (target.closest('#logout-btn')) {
+    if (target.closest('#profile-logout-btn')) {
         localStorage.removeItem('currentUserId');
         localStorage.removeItem('currentUserName');
         state.currentUserId = null;
         
         window.location.reload(); 
+        return;
+    }
+
+    if (target.closest('#profile-delete-btn')) {
+        const currentUserId = localStorage.getItem('currentUserId');
+        if (!currentUserId) return;
+
+        if (confirm('Ви дійсно хочете видалити свій профіль? Усі ваші дані будуть втрачені безповоротно.')) {
+            try {
+
+                await api.deleteUser(currentUserId);
+                
+                localStorage.removeItem('currentUserId');
+                localStorage.removeItem('currentUserName');
+                state.currentUserId = null;
+                
+                showNotice("Ваш профіль успішно видалено.");
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } catch (error) {
+                console.error(error);
+                showNotice("Не вдалося видалити профіль.", true);
+            }
+        }
         return;
     }
     
@@ -151,6 +178,15 @@ document.addEventListener('click', async (event) => {
         await loadPosts();
         return;
     }
+    if (target.closest('#open-profile-btn')) {
+
+        await openProfileModal();
+        return;
+    }
+    if (target.closest('#close-profile-btn') || target === document.getElementById('profile-modal-overlay')) {
+        closeProfileModal();
+        return;
+    }
 });
 document.addEventListener('submit', async (event) => {
     event.preventDefault(); 
@@ -214,6 +250,65 @@ document.addEventListener('submit', async (event) => {
             submitBtn.disabled = false;
             submitBtn.textContent = editCommentId ? 'Зберегти коментар' : 'Відправити коментар';
         }
+    }
+    if (target.id === 'edit-profile-form') {
+        const currentUserId = localStorage.getItem('currentUserId');
+        if (!currentUserId) return;
+
+        const nameInput = target.querySelector('#profile-name') as HTMLInputElement;
+        const emailInput = target.querySelector('#profile-email') as HTMLInputElement;
+        const nameError = target.querySelector('#profileNameError') as HTMLDivElement;
+        const emailError = target.querySelector('#profileEmailError') as HTMLDivElement;
+
+        const newName = nameInput.value.trim();
+        const newEmail = emailInput.value.trim();
+
+        if (nameInput && nameError && emailInput && emailError) {
+            clearError(nameInput, nameError);
+            clearError(emailInput, emailError);
+        }
+
+        const validationResult = UpdateUserSchema.shape.body.safeParse({
+            name: newName,
+            email: newEmail
+        });
+
+        if (!validationResult.success) {
+            validationResult.error.issues.forEach(issue => {
+                const fieldName = issue.path[0]; 
+                
+                if (fieldName === 'name') {
+                    showError(nameInput, nameError, issue.message);
+                } else if (fieldName === 'email') {
+                    showError(emailInput, emailError, issue.message);
+                }
+            });
+            return; 
+        }
+
+        const submitBtn = target.querySelector('button[type="submit"]') as HTMLButtonElement;
+        
+        try {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Збереження...';
+
+            await api.updateUser(currentUserId, { name: newName, email: newEmail });
+            
+            localStorage.setItem('currentUserName', newName);
+            const userNameDisplay = document.getElementById('user-name-display');
+            if (userNameDisplay) userNameDisplay.textContent = newName;
+
+            showNotice("Профіль успішно оновлено!");
+            closeProfileModal(); 
+        } catch (error) {
+            console.error(error);
+            const errorMsg = error instanceof Error ? error.message : "Не вдалося оновити профіль";
+            showNotice(errorMsg, true);
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Зберегти зміни';
+        }
+        return;
     }
 
 });

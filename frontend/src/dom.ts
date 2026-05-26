@@ -34,3 +34,12 @@ export const modalTitle = document.getElementById('modal-title') as HTMLHeadingE
 export const nameFieldWrapper = document.getElementById('name-field-wrapper') as HTMLDivElement;
 export const modalSubmitBtn = document.getElementById('modal-submit-btn') as HTMLButtonElement;
 export const toggleAuthModeBtn = document.getElementById('toggle-auth-mode') as HTMLAnchorElement;
+
+export const openProfileBtn = document.getElementById('open-profile-btn') as HTMLButtonElement;
+export const profileModalOverlay = document.getElementById('profile-modal-overlay') as HTMLDivElement;
+export const closeProfileBtn = document.getElementById('close-profile-btn') as HTMLButtonElement;
+export const editProfileForm = document.getElementById('edit-profile-form') as HTMLFormElement;
+export const profileNameInput = document.getElementById('profile-name') as HTMLInputElement;
+export const profileEmailInput = document.getElementById('profile-email') as HTMLInputElement;
+export const profileLogoutBtn = document.getElementById('profile-logout-btn') as HTMLButtonElement;
+export const profileDeleteBtn = document.getElementById('profile-delete-btn') as HTMLButtonElement;

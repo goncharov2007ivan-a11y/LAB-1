@@ -151,4 +151,9 @@ export const api = {
             body: JSON.stringify(userData)
         });
     },
+    deleteUser: async (userId: string) => {
+        return await request<boolean>(`/users/${userId}`, {
+            method: 'DELETE'
+        })
+    },
 };

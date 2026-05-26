@@ -80,7 +80,7 @@ export const usersRepository = {
   },
 
   delete: async (id: string): Promise<boolean> => {
-    const sql = `UPDATE Users SET isDeleted = 1 WHERE id = ?;`;
+    const sql = `UPDATE Users SET isDeleted = 1, email = email || '_deleted_' WHERE id = ?;`;
     const result = await run(sql, [Number(id)]);
     return result.changes > 0;
   },
