@@ -49,6 +49,10 @@ export async function initEditPostForm(postId: string) {
     try {
         const post = await api.getPost(postId);
         
+            if (!post) {
+        throw new Error("Оголошення не знайдено");
+    }
+
         titleInput.value = post.title;
         categoryInput.value = post.category;
         contentInput.value = post.content;
@@ -72,10 +76,13 @@ export function resetPostFormToCreate() {
     clearAllPostFormErrors();
 }
 export async function handleCreatePostSubmit(formElement: HTMLFormElement) {
-    if (!state.currentUserId) {
+
+    const userStr = localStorage.getItem('currentUser');
+    if (!userStr) {
         showNotice("Спочатку увійдіть в систему!", true);
         return;
     }
+    const currentUser = JSON.parse(userStr);
     
     const submitBtn = formElement.querySelector('button[type="submit"]') as HTMLButtonElement;
     if (submitBtn.disabled) return;
@@ -91,12 +98,14 @@ export async function handleCreatePostSubmit(formElement: HTMLFormElement) {
         submitBtn.textContent = 'Опублікувати';
         return;
     }; 
+    
     const formData = new FormData(formElement);
+
     const postData: CreatePostDto = {
         title: formData.get('title') as string,
         category: formData.get('category') as string,
         content: formData.get('content') as string,
-        authorId: state.currentUserId
+        authorId: String(currentUser.id) 
     };
 
     const editPostId = formElement.dataset.editPostId; 
@@ -116,8 +125,8 @@ export async function handleCreatePostSubmit(formElement: HTMLFormElement) {
         showView('List');
         await loadPosts();
         
-    } catch(error: unknown) {
-        showNotice("Помилка, не вдалося створити пост", true);
+    } catch(error: any) {
+        showNotice(error.message || "Помилка, не вдалося створити пост", true);
         console.error(error);
     } finally {
         submitBtn.disabled = false;

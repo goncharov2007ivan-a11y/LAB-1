@@ -13,15 +13,21 @@ export async function loadPostDetails(postId: string) {
         `;
 
         const post = await api.getPost(postId);
-        const currentUserId = localStorage.getItem('currentUserId');
-        const isMyPost = currentUserId && String(currentUserId) === String(post.authorId);
+
+        if (!post) {
+            throw new Error("Оголошення не знайдено");
+        }
+
+        const userStr = localStorage.getItem('currentUser');
+        const currentUser = userStr ? JSON.parse(userStr) : null;
+        const isMyPost = currentUser && String(currentUser.id) === String(post.authorId);
 
         viewPost.innerHTML = `
             <div class="toolbar">
                 <h2>Деталі оголошення</h2>
                 <div class="toolbar-actions" id="toolbar-actions">
                     <button type="button" id="back-from-detail-btn" class="btn outline">Назад</button>
-                    </div>
+                </div>
             </div>
 
             <div class="panel">
@@ -41,6 +47,20 @@ export async function loadPostDetails(postId: string) {
                 <div id="comments-list">
                     <p>Завантаження коментарів...</p>
                 </div>
+                
+                <form id="add-comment-form" class="comment-form">
+                    <input type="hidden" id="comment-post-id" value="${post.id}">
+                    
+                    <div class="field">
+                        <label for="comment-text">Ваш коментар</label>
+                        <textarea id="comment-text" name="text" rows="3" placeholder="Написати коментар..."></textarea>
+                        <div id="commentError" class="error-text"></div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn primary">Відправити коментар</button>
+                    </div>
+                </form>
             </div>
         `;
 
@@ -88,7 +108,9 @@ export async function loadComments(postId: string) {
 
     try {
         const comments = await api.getComments(postId);
-        const currentUserId = localStorage.getItem('currentUserId'); 
+        
+        const userStr = localStorage.getItem('currentUser');
+        const currentUser = userStr ? JSON.parse(userStr) : null;
         
         commentsList.innerHTML = '';
 
@@ -101,7 +123,8 @@ export async function loadComments(postId: string) {
         }
 
         comments.forEach((c: any) => {
-            const isMyComment = currentUserId && String(currentUserId) === String(c.authorId);
+
+            const isMyComment = currentUser && String(currentUser.id) === String(c.authorId);
 
             const commentItem = document.createElement('div');
             commentItem.className = 'comment-item';

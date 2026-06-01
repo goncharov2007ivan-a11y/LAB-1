@@ -1,5 +1,5 @@
 import { showView } from './app.js';
-import { initAuth } from './auth.js';
+import { handleLogout, initAuth } from './auth.js';
 import { handleCreatePostSubmit, initEditPostForm, resetPostFormToCreate } from './views/createForm.js';
 import { loadPosts } from './views/postsList.js';
 import { state } from './state.js';
@@ -46,30 +46,22 @@ document.addEventListener('click', async (event) => {
     }
 
     if (target.closest('#profile-logout-btn')) {
-        localStorage.removeItem('currentUserId');
-        localStorage.removeItem('currentUserName');
-        state.currentUserId = null;
-        
-        window.location.reload(); 
-        return;
+        handleLogout();
     }
 
     if (target.closest('#profile-delete-btn')) {
-        const currentUserId = localStorage.getItem('currentUserId');
-        if (!currentUserId) return;
+        const userStr = localStorage.getItem('currentUser');
+        if (!userStr) return;
+        const currentUserObj = JSON.parse(userStr);
+        const currentUserId = String(currentUserObj.id);
 
-        if (confirm('Ви дійсно хочете видалити свій профіль? Усі ваші дані будуть втрачені безповоротно.')) {
+        if (confirm('Ви дійсно хочете видалити свій профіль?')) {
             try {
-
                 await api.deleteUser(currentUserId);
-                
-                localStorage.removeItem('currentUserId');
-                localStorage.removeItem('currentUserName');
-                state.currentUserId = null;
-                
                 showNotice("Ваш профіль успішно видалено.");
+                
                 setTimeout(() => {
-                    window.location.reload();
+                    handleLogout();
                 }, 1500);
             } catch (error) {
                 console.error(error);
@@ -252,8 +244,11 @@ document.addEventListener('submit', async (event) => {
         }
     }
     if (target.id === 'edit-profile-form') {
-        const currentUserId = localStorage.getItem('currentUserId');
-        if (!currentUserId) return;
+
+        const userStr = localStorage.getItem('currentUser');
+        if (!userStr) return;
+        const currentUserObj = JSON.parse(userStr);
+        const currentUserId = String(currentUserObj.id);
 
         const nameInput = target.querySelector('#profile-name') as HTMLInputElement;
         const emailInput = target.querySelector('#profile-email') as HTMLInputElement;
@@ -294,23 +289,24 @@ document.addEventListener('submit', async (event) => {
 
             await api.updateUser(currentUserId, { name: newName, email: newEmail });
             
-            localStorage.setItem('currentUserName', newName);
+            currentUserObj.name = newName;
+            currentUserObj.email = newEmail;
+            localStorage.setItem('currentUser', JSON.stringify(currentUserObj));
+            
             const userNameDisplay = document.getElementById('user-name-display');
             if (userNameDisplay) userNameDisplay.textContent = newName;
 
             showNotice("Профіль успішно оновлено!");
             closeProfileModal(); 
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
-            const errorMsg = error instanceof Error ? error.message : "Не вдалося оновити профіль";
-            showNotice(errorMsg, true);
+            showNotice(error.message || "Не вдалося оновити профіль", true);
         } finally {
             submitBtn.disabled = false;
             submitBtn.textContent = 'Зберегти зміни';
         }
         return;
     }
-
 });
 
 console.log("Додаток ініціалізовано! Чекаємо на події...");

@@ -43,3 +43,5 @@ export const profileNameInput = document.getElementById('profile-name') as HTMLI
 export const profileEmailInput = document.getElementById('profile-email') as HTMLInputElement;
 export const profileLogoutBtn = document.getElementById('profile-logout-btn') as HTMLButtonElement;
 export const profileDeleteBtn = document.getElementById('profile-delete-btn') as HTMLButtonElement;
+
+export const passwordInput = document.getElementById('user-password') as HTMLInputElement;

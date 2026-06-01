@@ -3,6 +3,7 @@ import { Router } from "express";
 import { validate } from "../middleware/validate.middleware.js";
 import { CreatePostSchema, UpdatePostSchema } from "../../../shared/dtos/posts.dto.js";
 import { allowedCategories } from "../../../shared/dtos/posts.dto.js";
+import { authMiddleware } from "../middleware/auth.middleware.js";
 export const postsRouter = Router();
 postsRouter.get("/", postsController.list);
 postsRouter.get("/categories", (req, res) => {
@@ -10,6 +11,7 @@ postsRouter.get("/categories", (req, res) => {
 });
 postsRouter.get("/stats", postsController.stats);
 postsRouter.get("/:id", postsController.getById);
-postsRouter.post("/", validate(CreatePostSchema), postsController.create);
-postsRouter.patch("/:id", validate(UpdatePostSchema), postsController.update);
-postsRouter.delete("/:id", postsController.delete);
+
+postsRouter.post("/", authMiddleware, validate(CreatePostSchema), postsController.create);
+postsRouter.patch("/:id", authMiddleware, validate(UpdatePostSchema), postsController.update);
+postsRouter.delete("/:id", authMiddleware, postsController.delete);

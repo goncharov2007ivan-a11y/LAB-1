@@ -1,6 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import { postsService } from "../services/posts.service.js";
 import { postsRepository } from "../repositories/posts.repository.js";
+import type { AuthRequest } from "../middleware/auth.middleware.js";
 export const postsController = {
   list: async (
     req: Request,
@@ -50,8 +51,9 @@ export const postsController = {
     next: NextFunction,
   ): Promise<void> => {
     try {
-      const currentUserId = req.headers["user-id"] as string;
-      const newPost = await postsService.create(req.body);
+      const currentUserId = (req as AuthRequest).userId as string;
+      const postData = { ...req.body, authorId: currentUserId };
+      const newPost = await postsService.create(postData);
       res.status(201).json(newPost);
     } catch (error) {
       next(error);
@@ -64,7 +66,7 @@ export const postsController = {
   ): Promise<void> => {
     try {
       const id = req.params.id as string;
-      const currentUserId = req.headers["user-id"] as string;
+      const currentUserId = (req as AuthRequest).userId as string;
 
       const updatedPost = await postsService.update(id, currentUserId, req.body);
       res.status(200).json(updatedPost);
@@ -79,7 +81,7 @@ export const postsController = {
   ): Promise<void> => {
     try {
       const id = req.params.id as string;
-      const currentUserId = req.headers["user-id"] as string;
+      const currentUserId = (req as AuthRequest).userId as string;
       await postsService.delete(id, currentUserId);
       res.status(204).send();
     } catch (error) {

@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
 import { usersService } from "../services/users.service.js";
+import type { AuthRequest } from "../middleware/auth.middleware.js";
 
 export const usersController = {
   getAll: async (
@@ -39,6 +40,18 @@ export const usersController = {
       next(error);
     }
   },
+  login: async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
+    try {
+      const result = await usersService.login(req.body);
+      res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  },
   update: async (
     req: Request,
     res: Response,
@@ -46,7 +59,7 @@ export const usersController = {
   ): Promise<void> => {
     try {
       const id = req.params.id as string;
-      const currentUserId = req.headers["user-id"] as string;
+      const currentUserId = (req as AuthRequest).userId as string;
 
       const updatedUser = await usersService.update(id, currentUserId, req.body);
       res.status(200).json(updatedUser);
@@ -61,7 +74,7 @@ export const usersController = {
   ): Promise<void> => {
     try {
       const id = req.params.id as string;
-      const currentUserId = req.headers["user-id"] as string;
+      const currentUserId = (req as AuthRequest).userId as string;
 
       await usersService.delete(id, currentUserId);
       res.status(204).send();

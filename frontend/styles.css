@@ -232,6 +232,7 @@ body {
 
 input[type="text"],
 input[type="email"],
+input[type="password"],
 select,
 textarea,
 .search-box input {
@@ -294,6 +295,9 @@ textarea:focus {
     font-weight: 400;
     margin-top: 25px; 
     padding: 10px 0;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    white-space: pre-wrap;
 }
 
 .comment-item {
@@ -325,6 +329,12 @@ textarea:focus {
 .comment-body {
     color: #444;
     line-height: 1.5;
+}
+
+.comment-text {
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    white-space: pre-wrap;
 }
 
 #posts-table td {

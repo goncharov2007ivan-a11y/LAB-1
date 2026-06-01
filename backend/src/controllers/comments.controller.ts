@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
 import { commentsService } from "../services/comments.service.js";
+import type { AuthRequest } from "../middleware/auth.middleware.js";
 
 export const commentsController = {
   getByPostId: async (
@@ -22,7 +23,7 @@ export const commentsController = {
   ): Promise<void> => {
     try {
       const { postId, text } = req.body;
-      const currentUserId = req.headers["User-id"] as string;
+      const currentUserId = (req as AuthRequest).userId as string;
 
       const comment = await commentsService.create({
         postId,
@@ -42,7 +43,7 @@ export const commentsController = {
   ): Promise<void> => {
     try {
       const id = req.params.id as string;
-      const currentUserId = req.headers['User-id'] as string;
+      const currentUserId = (req as AuthRequest).userId as string;
       
       const updatedComment = await commentsService.update(id, currentUserId, req.body);
       res.status(200).json(updatedComment);
@@ -57,7 +58,7 @@ export const commentsController = {
   ): Promise<void> => {
     try {
       const id = req.params.id as string;
-      const currentUserId = req.headers['user-id'] as string;
+      const currentUserId = (req as AuthRequest).userId as string;
 
       await commentsService.delete(id, currentUserId);
       res.status(204).send();

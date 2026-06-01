@@ -5,6 +5,7 @@ import type { User } from "../../../shared/dtos/users.dto.js";
 interface CreateUserData {
   name: string;
   email: string;
+  passwordHash: string;
   date: string;
 }
 
@@ -12,6 +13,7 @@ const DbUserRowSchema = z.object({
   id: z.coerce.string(),
   name: z.string(),
   email: z.string(),
+  passwordHash: z.string(),
   date: z.string(),
   isDeleted: z.number().int().min(0).max(1)
 });
@@ -40,12 +42,19 @@ export const usersRepository = {
     return row ? mapToUser(row) : undefined;
   },
 
+  getByEmailWithPassword: async (email: string) => {
+    const sql = `SELECT * FROM Users WHERE email = ? AND isDeleted = 0;`;
+    const row = await get(sql, [email]);
+    if (!row) return undefined;
+    return DbUserRowSchema.parse(row);
+  },
+
   create: async (data: CreateUserData): Promise<User> => {
     const sql = `
-      INSERT INTO Users (name, email, date, isDeleted) 
-      VALUES (?, ?, ?, 0);
+      INSERT INTO Users (name, email, passwordHash, date, isDeleted) 
+      VALUES (?, ?, ?, ?, 0);
     `;
-    const result = await run(sql, [data.name, data.email, data.date]);
+    const result = await run(sql, [data.name, data.email, data.passwordHash, data.date]);
 
     const createdSql = `SELECT * FROM Users WHERE id = ?;`;
     const row = await get(createdSql, [result.lastID]);

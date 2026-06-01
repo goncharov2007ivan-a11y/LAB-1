@@ -1,19 +1,21 @@
 
-import { CreatePostDto, UpdatePostDto } from "../../shared/dtos/posts.dto";
-import { CreateUserDto, UserViewDto, UpdateUserDto } from "../../shared/dtos/users.dto";
+import { CommentViewDto } from "../../shared/dtos/comments.dto";
+import { CreatePostDto, ListResponse, PostViewDto, UpdatePostDto } from "../../shared/dtos/posts.dto";
+import { CreateUserDto, UserViewDto, UpdateUserDto, LoginUserDto } from "../../shared/dtos/users.dto";
 
 const BASE_URL = 'http://localhost:3000/api/v1';
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T | null> {
     const url = `${BASE_URL}${path}`;
-    const userId = localStorage.getItem('currentUserId') || '';
+
+    const token = localStorage.getItem('token');
 
     const headers = new Headers(options.headers || {});
     if (!headers.has('Content-Type') && options.method !== 'GET' && options.method !== 'DELETE') {
         headers.set('Content-Type', 'application/json');
     }
-    if (userId) {
-        headers.set('User-Id', userId);
+    if (token) {
+        headers.set('Authorization', `Bearer ${token}`);
     }
 
     const controller = new AbortController();
@@ -40,11 +42,18 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T | 
         let errorData;
         try { errorData = JSON.parse(rawText); } 
         catch { errorData = null; }
+
+        const errorMessage = errorData?.message || errorData?.error || errorData?.title;
+
+        if (response.status === 401) {
+            throw new Error(errorMessage || "Необхідна авторизація. Увійдіть у систему.");
+        }
         
-        if (response.status === 403) throw new Error("Немає прав для цієї дії");
+        if (response.status === 403) {
+            throw new Error(errorMessage || "Немає прав для цієї дії");
+        }
         
-        const errorMessage = errorData?.message || errorData?.title || `Помилка сервера: ${response.status}`;
-        throw new Error(errorMessage);
+        throw new Error(errorMessage || `Помилка сервера: ${response.status}`);
     }
 
     if (!rawText) return null;
@@ -65,23 +74,23 @@ export const api = {
         params.append("sort", sort);
 
         const url = `/posts?${params.toString()}`;
-        const data = await request<any>(url);
-        return data.items; 
+        const data = await request<ListResponse<PostViewDto>>(url);
+        return data?.items; 
     },
     
     getPost: async (postId: string) => {
-        return await request<any>(`/posts/${postId}`);
+        return await request<PostViewDto>(`/posts/${postId}`);
     },
 
     createPost: async (postData: CreatePostDto) => {
-        return await request<any>(`/posts`, {
+        return await request<PostViewDto>(`/posts`, {
             method: 'POST',
             body: JSON.stringify(postData)
         });
     },
 
     updatePost: async (postId: string, postData: UpdatePostDto) => {
-        return await request<any>(`/posts/${postId}`, {
+        return await request<PostViewDto>(`/posts/${postId}`, {
             method: 'PATCH',
             body: JSON.stringify(postData)
         });
@@ -92,21 +101,22 @@ export const api = {
     },
 
     getComments: async (postId: string) => {
-        return await request<any>(`/comments/post/${postId}`);
+        return await request<CommentViewDto[]>(`/comments/post/${postId}`);
     },
 
     createComment: async (postId: string, content: string) => {
-        const userId = localStorage.getItem('currentUserId'); 
-        if (!userId) throw new Error("Ви повинні увійти, щоб залишити коментар");
+        const userStr = localStorage.getItem('currentUser'); 
+        if (!userStr) throw new Error("Ви повинні увійти, щоб залишити коментар");
+        const user = JSON.parse(userStr);
 
-        return await request<any>(`/comments`, {
+        return await request<CommentViewDto>(`/comments`, {
             method: 'POST',
-            body: JSON.stringify({ postId: postId, authorId: userId, text: content })
+            body: JSON.stringify({ postId: postId, authorId: user.id, text: content })
         });
     },
 
     updateComment: async (commentId: string, text: string) => {
-        return await request<any>(`/comments/${commentId}`, {
+        return await request<CommentViewDto>(`/comments/${commentId}`, {
             method: 'PATCH',
             body: JSON.stringify({ text })
         });
@@ -115,6 +125,7 @@ export const api = {
     deleteComment: async (commentId: string) => {
         return await request<boolean>(`/comments/${commentId}`, { method: 'DELETE' });
     },
+
     getUsers: async () => {
         return await request<UserViewDto[]>('/users', { method: 'GET' });
     },
@@ -123,20 +134,14 @@ export const api = {
         return await request<UserViewDto>(`/users/${userId}`, { method: 'GET' });
     },
 
-    loginUser: async (email: string) => {
-        const users = await request<UserViewDto[]>('/users', { method: 'GET' });
+    loginUser: async (loginData: LoginUserDto) => {
+        const data = await request<{ token: string, user: UserViewDto }>('/users/login', { 
+            method: 'POST',
+            body: JSON.stringify(loginData)
+        });
         
-        if (!users || !Array.isArray(users)) {
-            throw new Error("Помилка отримання даних з сервера");
-        }
-        
-        const user = users.find(u => u.email === email);
-        
-        if (!user) {
-            throw new Error("Користувача з таким email не знайдено");
-        }
-        
-        return user;
+        if (!data) throw new Error("Помилка авторизації");
+        return data;
     },
 
     createUser: async (userData: CreateUserDto) => {

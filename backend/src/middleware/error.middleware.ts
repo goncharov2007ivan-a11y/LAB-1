@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
 import { ZodError } from "zod";
+
 export const errorHandler = (
   err: unknown,
   req: Request,
@@ -7,15 +8,27 @@ export const errorHandler = (
   next: NextFunction,
 ): void => {
   console.error(`[Error]: ${err}`);
+  
   if (err instanceof ZodError) {
-        res.status(400).json({
-            message: "Помилка валідації даних",
-            errors: err.issues
-        });
-        return;
+    res.status(400).json({
+      message: "Помилка валідації даних",
+      errors: err.issues
+    });
+    return;
+  }
+  
+  if (err instanceof Error) {
+ 
+    if (err.message === "Користувач з таким email вже існує") {
+      res.status(409).json({ message: err.message });
+      return;
     }
-    if (err instanceof Error) {
-    
+
+    if (err.message === "Невірний email або пароль") {
+      res.status(401).json({ message: err.message });
+      return;
+    }
+
     if (err.message.includes("UNIQUE constraint failed")) {
       res.status(409).json({ message: "Дані вже існують (порушення унікальності)" });
       return;

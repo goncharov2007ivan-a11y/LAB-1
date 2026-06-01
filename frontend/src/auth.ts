@@ -1,48 +1,23 @@
-import { api } from "./api.js";
-import { state } from "./state.js";
 import { authBtn, userGreeting, userNameDisplay } from "./dom.js"
-import { loadPosts } from "./views/postsList.js";
 
-export async function handleAuth() {
-    if(state.currentUserId) {
-        state.currentUserId = null;
-        localStorage.removeItem('currentUserId');
-        localStorage.removeItem('currentUserName');
-        updateAuthUI();
-        await loadPosts();
-        return;
-    }
+export function handleLogout() {
 
-    const email = prompt("Введіть email для входу (test@example.com)");
-    if (!email) return;
-
-    try {
-        const users = await api.getUsers() || [];
-        const user = users.find((u:any) => u.email === email);
-
-        if (!user) {
-            alert("Користувача з таким email не знайдено в базі!");
-            return;
-        }
-        state.currentUserId = user.id;
-        localStorage.setItem('currentUserId', String(user.id));
-        localStorage.setItem('currentUserName', user.name || user.email);
-
-        updateAuthUI();
-        await loadPosts();
-        alert(`Вітаємо, ви успішно увійшли!`);
-        
-    } catch (error) {
-        alert("Помилка входу");
-        console.error(error);
-    }
-}
-export function updateAuthUI() {
-    const savedName = localStorage.getItem('currentUserName');
+    localStorage.removeItem('token');
+    localStorage.removeItem('currentUser');
     
-    if (state.currentUserId && savedName) {
+    updateAuthUI();
+    
+    window.location.reload();
+}
+
+export function updateAuthUI() {
+    const token = localStorage.getItem('token');
+    const userStr = localStorage.getItem('currentUser');
+    
+    if (token && userStr) {
+        const user = JSON.parse(userStr);
         authBtn.hidden = true; 
-        userNameDisplay.textContent = savedName;
+        userNameDisplay.textContent = user.name;
         userGreeting.hidden = false;
     } else {
         authBtn.hidden = false;
@@ -51,10 +26,7 @@ export function updateAuthUI() {
         userGreeting.hidden = true;
     }
 }
+
 export function initAuth() {
-    const savedId = localStorage.getItem('currentUserId');
-    if (savedId) {
-        state.currentUserId = savedId;
-    }
     updateAuthUI();
 }
